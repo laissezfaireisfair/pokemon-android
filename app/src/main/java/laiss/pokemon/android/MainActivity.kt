@@ -7,15 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import laiss.pokemon.android.navigation.Screens
+import laiss.pokemon.android.ui.OverviewScreen
 import laiss.pokemon.android.ui.TopBar
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
+import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,9 +32,12 @@ class MainActivity : ComponentActivity() {
                         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
                             TopBar(navHostController = navHostController)
                         }) { innerPadding ->
-                            Text(
-                                text = "Hello ${"Android"}!",
-                                modifier = Modifier.padding(innerPadding)
+                            OverviewScreen(
+                                navHostController = navHostController,
+                                viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewMode() },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(innerPadding)
                             )
                         }
                     }

@@ -25,9 +25,9 @@ class OverviewScreenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(OverviewScreenState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        refresh()
-    }
+//    init {
+//        refresh()
+//    }
 
     fun refresh() {
         viewModelScope.launch {
