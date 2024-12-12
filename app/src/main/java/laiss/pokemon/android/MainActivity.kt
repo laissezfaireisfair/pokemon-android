@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import laiss.pokemon.android.navigation.Screens
+import laiss.pokemon.android.ui.TopBar
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +23,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PokemonAndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navHostController = rememberNavController()
+                NavHost(
+                    navController = navHostController, startDestination = Screens.Overview.route,
+                ) {
+                    composable(Screens.Overview.route) {
+                        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+                            TopBar(navHostController = navHostController)
+                        }) { innerPadding ->
+                            Text(
+                                text = "Hello ${"Android"}!",
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PokemonAndroidTheme {
-        Greeting("Android")
     }
 }
