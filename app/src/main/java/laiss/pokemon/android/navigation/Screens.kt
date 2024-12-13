@@ -1,14 +1,9 @@
 package laiss.pokemon.android.navigation
 
-enum class Screens(val route: String) {
-    Overview("overview");
+import androidx.navigation.NavHostController
 
-    companion object {
-        private val screenByRoute = entries.associateBy { it.route }
-        operator fun get(route: String) = screenByRoute[route]
-    }
-}
+enum class Screens(val route: String) { Overview("overview"), Details("details") }
 
-fun Screens.toName() = when (this) {
-    Screens.Overview -> "Overview"
+fun NavHostController.navigateToDetails(pokemonId: Int) {
+    navigate("${Screens.Details.route}/$pokemonId")
 }

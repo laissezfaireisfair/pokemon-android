@@ -6,11 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import laiss.pokemon.android.models.Pokemon
 import laiss.pokemon.android.services.DataService
+import laiss.pokemon.android.utils.capitalize
 
-data class OverviewScreenEntry(
-    val name: String, val imageUrl: String
-)
+data class OverviewScreenEntry(val id: Int, val name: String, val imageUrl: String)
+
+fun Pokemon.toEntry() = OverviewScreenEntry(id = id, name = name.capitalize(), imageUrl = imageUrl)
 
 data class OverviewScreenState(
     val isLoading: Boolean = false,
@@ -25,17 +27,13 @@ class OverviewScreenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(OverviewScreenState())
     val uiState = _uiState.asStateFlow()
 
-//    init {
-//        refresh()
-//    }
-
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
                 val offset = DataService.getPokemonRandomValidOffset(pokemonInBatch)
-                val entries = DataService.getPokemonList(offset, pokemonInBatch)
-                    .map { OverviewScreenEntry(name = it.name, imageUrl = it.imageUrl) }
+                val entries =
+                    DataService.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
@@ -48,8 +46,13 @@ class OverviewScreenViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true) }
             val offset = _uiState.value.offset + pokemonInBatch
             try {
-                val newEntries = DataService.getPokemonList(offset, pokemonInBatch)
-                    .map { OverviewScreenEntry(name = it.name, imageUrl = it.imageUrl) }
+                val isEndReached = DataService.isPokemonEndReached(offset)
+                if (isEndReached) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    return@launch
+                }
+                val newEntries =
+                    DataService.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { it.copy(entries = it.entries + newEntries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
@@ -62,27 +65,33 @@ class OverviewScreenViewModel : ViewModel() {
             OverviewScreenState(
                 entries = listOf(
                     OverviewScreenEntry(
-                        name = "bulbasaur",
+                        id = 1,
+                        name = "bulbasaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
                     ),
                     OverviewScreenEntry(
-                        name = "ivysaur",
+                        id = 2,
+                        name = "ivysaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
                     ),
                     OverviewScreenEntry(
-                        name = "venusaur",
+                        id = 3,
+                        name = "venusaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
                     ),
                     OverviewScreenEntry(
-                        name = "charmander",
+                        id = 4,
+                        name = "charmander".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
                     ),
                     OverviewScreenEntry(
-                        name = "charmeleon",
+                        id = 5,
+                        name = "charmeleon".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
                     ),
                     OverviewScreenEntry(
-                        name = "squirtle",
+                        id = 6,
+                        name = "squirtle".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
                     ),
                 )
