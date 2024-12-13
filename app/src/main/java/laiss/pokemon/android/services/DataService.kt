@@ -1,13 +1,68 @@
 package laiss.pokemon.android.services
 
 import laiss.pokemon.android.models.Pokemon
+import laiss.pokemon.android.models.PokemonType
+import laiss.pokemon.android.web.PokemonDto
+import laiss.pokemon.android.web.WebClient
+import kotlin.random.Random
+
+fun PokemonDto.toModel() = Pokemon(
+    id = id,
+    name = name,
+    imageUrl = sprites.front_default,
+    height = height,
+    weight = weight,
+    types = types.map { PokemonType.valueOf(it.type.name) },
+    attack = stats.first { it.stat.name == "attack" }.base_stat,
+    defence = stats.first { it.stat.name == "defence" }.base_stat,
+    hp = stats.first { it.stat.name == "hp" }.base_stat
+)
 
 object DataService {
-    suspend fun isPokemonEndReached(offset: Int): Boolean = TODO()
+    private val pokemonByName = mutableMapOf<String, Pokemon>()
+    private val pokemonList = mutableListOf<Pokemon?>()  // Index is id - 1
+    private val isInitialized
+        get() = pokemonList.isEmpty()
 
-    suspend fun getPokemonList(offset: Int, count: Int): List<Pokemon> = TODO()
+    suspend fun isPokemonEndReached(offset: Int): Boolean {
+        ensureIsInitialized()
+        return pokemonList.count() <= offset
+    }
 
-    suspend fun getPokemonRandomValidOffset(count: Int): Int = TODO()
+    suspend fun getPokemonList(offset: Int, count: Int): List<Pokemon> {
+        if (isInitialized) {
+            val cached = pokemonList.asSequence().drop(offset).take(count)
+            if (cached.all { it != null })
+                return cached.map { it!! }.toList()
+        }
 
-    suspend fun getPokemonByName(pokemonName: String): Pokemon = TODO()
+        val headerList = WebClient.getPokemonHeadersList(offset, count)
+
+        if (!isInitialized) pokemonList.addAll(List(headerList.count) { null })
+
+        return headerList.results.map { getPokemonByName(it.name) }
+    }
+
+    suspend fun getPokemonRandomValidOffset(count: Int): Int {
+        ensureIsInitialized()
+        return Random.nextInt(0, pokemonList.count() - count)
+    }
+
+    suspend fun getPokemonByName(pokemonName: String): Pokemon {
+        ensureIsInitialized()
+
+        val cachedPokemon = pokemonByName[pokemonName]
+        if (cachedPokemon != null) return cachedPokemon
+
+        val pokemon = WebClient.getPokemon(pokemonName).toModel()
+        pokemonList[pokemon.id - 1] = pokemon
+        pokemonByName[pokemon.name] = pokemon
+        return pokemon
+    }
+
+    private suspend fun ensureIsInitialized() {
+        if (isInitialized) return
+
+        getPokemonList(0, 1)
+    }
 }

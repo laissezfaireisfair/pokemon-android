@@ -29,20 +29,20 @@ class OverviewScreenViewModel : ViewModel() {
 
     private var _isPreview = false
 
-    fun refresh() {
+    fun refresh(randomStart: Boolean = false) {  // TODO: Separate this logic
         if (_isPreview) return
 
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
-                val offset = DataService.getPokemonRandomValidOffset(pokemonInBatch)
+                val offset =
+                    if (randomStart) DataService.getPokemonRandomValidOffset(pokemonInBatch) else 0
                 val entries =
                     DataService.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
-            }
-            catch (error: Error) {
+            } catch (error: Error) {
                 _uiState.update { OverviewScreenState(error = error.message) }
             }
         }
