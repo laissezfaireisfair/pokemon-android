@@ -9,5 +9,5 @@ object DataService {
 
     suspend fun getPokemonRandomValidOffset(count: Int): Int = TODO()
 
-    suspend fun getPokemonById(pokemonId: Int): Pokemon = TODO()
+    suspend fun getPokemonByName(pokemonName: String): Pokemon = TODO()
 }

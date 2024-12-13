@@ -91,7 +91,7 @@ fun OverviewScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.entries) {
-                    ElevatedCard(onClick = { navHostController.navigateToDetails(it.id) }) {
+                    ElevatedCard(onClick = { navHostController.navigateToDetails(it.name) }) {
                         Row(
                             modifier = Modifier
                                 .padding(8.dp)

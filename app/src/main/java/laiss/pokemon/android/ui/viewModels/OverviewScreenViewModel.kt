@@ -10,9 +10,9 @@ import laiss.pokemon.android.models.Pokemon
 import laiss.pokemon.android.services.DataService
 import laiss.pokemon.android.utils.capitalize
 
-data class OverviewScreenEntry(val id: Int, val name: String, val imageUrl: String)
+data class OverviewScreenEntry(val name: String, val imageUrl: String)
 
-fun Pokemon.toEntry() = OverviewScreenEntry(id = id, name = name.capitalize(), imageUrl = imageUrl)
+fun Pokemon.toEntry() = OverviewScreenEntry(name = name.capitalize(), imageUrl = imageUrl)
 
 data class OverviewScreenState(
     val isLoading: Boolean = false,
@@ -73,32 +73,26 @@ class OverviewScreenViewModel : ViewModel() {
             OverviewScreenState(
                 entries = listOf(
                     OverviewScreenEntry(
-                        id = 1,
                         name = "bulbasaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
                     ),
                     OverviewScreenEntry(
-                        id = 2,
                         name = "ivysaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
                     ),
                     OverviewScreenEntry(
-                        id = 3,
                         name = "venusaur".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
                     ),
                     OverviewScreenEntry(
-                        id = 4,
                         name = "charmander".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
                     ),
                     OverviewScreenEntry(
-                        id = 5,
                         name = "charmeleon".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
                     ),
                     OverviewScreenEntry(
-                        id = 6,
                         name = "squirtle".capitalize(),
                         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
                     ),

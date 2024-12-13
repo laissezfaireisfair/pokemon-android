@@ -46,7 +46,7 @@ fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
     DetailsScreen(
         navHostController = rememberNavController(),
         viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeOk() },
-        pokemonId = 1
+        pokemonName = "bulbasaur"
     )
 }
 
@@ -56,7 +56,7 @@ fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
     DetailsScreen(
         navHostController = rememberNavController(),
         viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeLoading() },
-        pokemonId = 1
+        pokemonName = "bulbasaur"
     )
 }
 
@@ -66,7 +66,7 @@ fun DetailsScreenPreviewError() = PokemonAndroidTheme {
     DetailsScreen(
         navHostController = rememberNavController(),
         viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeError() },
-        pokemonId = 1
+        pokemonName = "bulbasaur"
     )
 }
 
@@ -75,9 +75,9 @@ fun DetailsScreenPreviewError() = PokemonAndroidTheme {
 fun DetailsScreen(
     navHostController: NavHostController,
     viewModel: DetailsScreenViewModel = viewModel(),
-    pokemonId: Int
+    pokemonName: String
 ) {
-    viewModel.launch(pokemonId)
+    viewModel.launch(pokemonName)
 
     val state = viewModel.uiState.collectAsState().value
 

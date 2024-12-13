@@ -42,13 +42,13 @@ class DetailsScreenViewModel : ViewModel() {
 
     private var _isPreview = false
 
-    fun launch(pokemonId: Int) {
+    fun launch(pokemonName: String) {
         if (_isPreview) return
 
         viewModelScope.launch {
             _uiState.update { DetailsScreenState(isLoading = true) }
             try {
-                val pokemon = DataService.getPokemonById(pokemonId)
+                val pokemon = DataService.getPokemonByName(pokemonName)
                 _uiState.update { DetailsScreenState(details = pokemon.toDetails()) }
             } catch (exception: Exception) {
                 _uiState.update { DetailsScreenState(error = exception.message) }
