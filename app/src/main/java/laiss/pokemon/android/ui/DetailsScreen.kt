@@ -43,42 +43,29 @@ import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
-    DetailsScreen(
-        navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeOk() },
-        pokemonName = "bulbasaur"
-    )
+    DetailsScreen(navHostController = rememberNavController(),
+        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setOkPreview() })
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
-    DetailsScreen(
-        navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeLoading() },
-        pokemonName = "bulbasaur"
-    )
+    DetailsScreen(navHostController = rememberNavController(),
+        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setLoadingPreview() })
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewError() = PokemonAndroidTheme {
-    DetailsScreen(
-        navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeError() },
-        pokemonName = "bulbasaur"
-    )
+    DetailsScreen(navHostController = rememberNavController(),
+        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setErrorPreview() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailsScreen(
-    navHostController: NavHostController,
-    viewModel: DetailsScreenViewModel = viewModel(),
-    pokemonName: String
+    navHostController: NavHostController, viewModel: DetailsScreenViewModel
 ) {
-    viewModel.launch(pokemonName)
-
     val state = viewModel.uiState.collectAsState().value
 
     Scaffold(topBar = {

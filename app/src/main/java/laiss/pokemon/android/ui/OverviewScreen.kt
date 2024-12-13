@@ -37,21 +37,21 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
     OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeOk() })
+        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setOkPreview() })
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
     OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeLoading() })
+        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setLoadingPreview() })
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewError() = PokemonAndroidTheme {
     OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeError() })
+        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setErrorPreview() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +59,6 @@ fun OverviewScreenPreviewError() = PokemonAndroidTheme {
 fun OverviewScreen(
     navHostController: NavHostController, viewModel: OverviewScreenViewModel = viewModel()
 ) {
-    viewModel.refresh()
-
     val state = viewModel.uiState.collectAsState().value
 
     Scaffold(topBar = {
@@ -91,7 +89,7 @@ fun OverviewScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.entries) {
-                    ElevatedCard(onClick = { navHostController.navigateToDetails(it.name) }) {
+                    ElevatedCard(onClick = { navHostController.navigateToDetails(it.name.lowercase()) }) {
                         Row(
                             modifier = Modifier
                                 .padding(8.dp)

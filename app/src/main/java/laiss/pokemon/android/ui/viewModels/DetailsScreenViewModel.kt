@@ -36,54 +36,40 @@ data class DetailsScreenState(
     val isLoading: Boolean = false, val error: String? = null, val details: Details? = null
 )
 
-class DetailsScreenViewModel : ViewModel() {
+class DetailsScreenViewModel(pokemonName: String, isPreview: Boolean = false) : ViewModel() {
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private var _isPreview = false
-
-    fun launch(pokemonName: String) {
-        if (_isPreview) return
-
-        viewModelScope.launch {
+    init {
+        if (isPreview.not()) viewModelScope.launch {
             _uiState.update { DetailsScreenState(isLoading = true) }
             try {
                 val pokemon = DataService.getPokemonByName(pokemonName)
                 _uiState.update { DetailsScreenState(details = pokemon.toDetails()) }
             } catch (exception: Exception) {
                 _uiState.update { DetailsScreenState(error = exception.message) }
-            }
-            catch (error: Error) {
+            } catch (error: Error) {
                 _uiState.update { DetailsScreenState(error = error.message) }
             }
         }
     }
 
-    fun setPreviewModeOk() {
-        _isPreview = true
-        _uiState.update {
-            DetailsScreenState(
-                details = Details(
-                    name = "bulbasaur".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-                    weight = 69.0.toString(),
-                    height = 7.0.toString(),
-                    types = listOf("grass", "poison"),
-                    attack = 49.toString(),
-                    defence = 49.toString(),
-                    hp = 45.toString()
-                )
+    fun setOkPreview() = _uiState.update {
+        DetailsScreenState(
+            details = Details(
+                name = "bulbasaur".capitalize(),
+                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+                weight = 69.0.toString(),
+                height = 7.0.toString(),
+                types = listOf("grass", "poison"),
+                attack = 49.toString(),
+                defence = 49.toString(),
+                hp = 45.toString()
             )
-        }
+        )
     }
 
-    fun setPreviewModeLoading() {
-        _isPreview = true
-        _uiState.update { DetailsScreenState(isLoading = true) }
-    }
+    fun setLoadingPreview() = _uiState.update { DetailsScreenState(isLoading = true) }
 
-    fun setPreviewModeError() {
-        _isPreview = true
-        _uiState.update { DetailsScreenState(error = "404. Not found") }
-    }
+    fun setErrorPreview() = _uiState.update { DetailsScreenState(error = "404. Not found") }
 }
