@@ -66,8 +66,8 @@ class DetailsScreenViewModel : ViewModel() {
                 details = Details(
                     name = "bulbasaur".capitalize(),
                     imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-                    weight = 69.0.toString(),
-                    height = 7.0.toString(),
+                    weight = 69.toString(),
+                    height = 7.toString(),
                     types = listOf("grass", "poison"),
                     attack = 49.toString(),
                     defence = 49.toString(),
