@@ -8,12 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 
@@ -59,7 +55,11 @@ fun OverviewScreen(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(Icons.Default.Person, "sample", modifier = Modifier.size(50.dp))
+                    AsyncImage(
+                        modifier = Modifier.size(50.dp),
+                        model = it.imageUrl,
+                        contentDescription = "Pokemon front image"
+                    )
                     Text(text = it.name)
                 }
             }
