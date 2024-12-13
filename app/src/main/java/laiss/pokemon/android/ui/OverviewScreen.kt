@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -33,9 +35,23 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun OverviewScreenPreview() = PokemonAndroidTheme {
+fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
     OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewMode() })
+        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeOk() })
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
+    OverviewScreen(navHostController = rememberNavController(),
+        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeLoading() })
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+fun OverviewScreenPreviewError() = PokemonAndroidTheme {
+    OverviewScreen(navHostController = rememberNavController(),
+        viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeError() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,12 +67,20 @@ fun OverviewScreen(
         TopAppBar(title = { Text(text = "Overview") })
     }) { innerPadding ->
         when {
-            state.isLoading -> Text("Loading...", color = Subtext0)
+            state.isLoading -> Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) { Text("Loading...", color = Subtext0) }
 
-            state.error != null -> Column {
+            state.error != null -> Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(text = "Something went wrong", color = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = state.error, color = Subtext0)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = state.error, fontSize = 10.sp, color = Subtext0)
             }
 
             else -> LazyColumn(

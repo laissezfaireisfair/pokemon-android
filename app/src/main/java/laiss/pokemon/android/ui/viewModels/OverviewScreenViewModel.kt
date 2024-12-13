@@ -60,42 +60,44 @@ class OverviewScreenViewModel : ViewModel() {
         }
     }
 
-    fun setPreviewMode() {
-        _uiState.update {
-            OverviewScreenState(
-                entries = listOf(
-                    OverviewScreenEntry(
-                        id = 1,
-                        name = "bulbasaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
-                    ),
-                    OverviewScreenEntry(
-                        id = 2,
-                        name = "ivysaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
-                    ),
-                    OverviewScreenEntry(
-                        id = 3,
-                        name = "venusaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
-                    ),
-                    OverviewScreenEntry(
-                        id = 4,
-                        name = "charmander".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
-                    ),
-                    OverviewScreenEntry(
-                        id = 5,
-                        name = "charmeleon".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
-                    ),
-                    OverviewScreenEntry(
-                        id = 6,
-                        name = "squirtle".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
-                    ),
-                )
+    fun setPreviewModeOk() = _uiState.update {
+        OverviewScreenState(
+            entries = listOf(
+                OverviewScreenEntry(
+                    id = 1,
+                    name = "bulbasaur".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                ),
+                OverviewScreenEntry(
+                    id = 2,
+                    name = "ivysaur".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
+                ),
+                OverviewScreenEntry(
+                    id = 3,
+                    name = "venusaur".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
+                ),
+                OverviewScreenEntry(
+                    id = 4,
+                    name = "charmander".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                ),
+                OverviewScreenEntry(
+                    id = 5,
+                    name = "charmeleon".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
+                ),
+                OverviewScreenEntry(
+                    id = 6,
+                    name = "squirtle".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
+                ),
             )
-        }
+        )
     }
+
+    fun setPreviewModeLoading() = _uiState.update { OverviewScreenState(isLoading = true) }
+
+    fun setPreviewModeError() = _uiState.update { OverviewScreenState(error = "404. Not found") }
 }

@@ -52,7 +52,7 @@ class DetailsScreenViewModel : ViewModel() {
         }
     }
 
-    fun setPreviewMode() {
+    fun setPreviewModeOk() {
         _uiState.update {
             DetailsScreenState(
                 details = Details(
@@ -68,4 +68,8 @@ class DetailsScreenViewModel : ViewModel() {
             )
         }
     }
+
+    fun setPreviewModeLoading() = _uiState.update { DetailsScreenState(isLoading = true) }
+
+    fun setPreviewModeError() = _uiState.update { DetailsScreenState(error = "404. Not found") }
 }

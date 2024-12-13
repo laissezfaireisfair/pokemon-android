@@ -42,10 +42,30 @@ import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreview() = PokemonAndroidTheme {
+fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
     DetailsScreen(
         navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewMode() },
+        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeOk() },
+        pokemonId = 1
+    )
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
+    DetailsScreen(
+        navHostController = rememberNavController(),
+        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeLoading() },
+        pokemonId = 1
+    )
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+fun DetailsScreenPreviewError() = PokemonAndroidTheme {
+    DetailsScreen(
+        navHostController = rememberNavController(),
+        viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeError() },
         pokemonId = 1
     )
 }
@@ -62,12 +82,11 @@ fun DetailsScreen(
     val state = viewModel.uiState.collectAsState().value
 
     Scaffold(topBar = {
-        TopAppBar(title = { Text(text = "Details") },
-            navigationIcon = {
-                IconButton(onClick = { navHostController.navigateUp() }) {
-                    Icon(Icons.AutoMirrored.Default.ArrowBack, "Navigate back")
-                }
-            })
+        TopAppBar(title = { Text(text = "Details") }, navigationIcon = {
+            IconButton(onClick = { navHostController.navigateUp() }) {
+                Icon(Icons.AutoMirrored.Default.ArrowBack, "Navigate back")
+            }
+        })
     }) { innerPadding ->
         Column(
             modifier = Modifier
@@ -78,20 +97,35 @@ fun DetailsScreen(
             verticalArrangement = Arrangement.Center
         ) {
             when {
-                state.isLoading -> Text("Loading...", color = Subtext0)
+                state.isLoading -> Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) { Text("Loading...", color = Subtext0) }
 
-                state.error != null || state.details == null -> Column {
+                state.error != null || state.details == null -> Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(text = "Something went wrong", color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(8.dp))
                     if (state.error != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = state.error, color = Subtext0)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = state.error, fontSize = 10.sp, color = Subtext0)
                     }
                 }
 
                 else -> ElevatedCard {
-                    Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth()
+                    ) {
                         AsyncImage(
-                            modifier = Modifier.size(150.dp).align(Alignment.CenterHorizontally),
+                            modifier = Modifier
+                                .size(150.dp)
+                                .align(Alignment.CenterHorizontally),
                             model = state.details.imageUrl,
                             contentScale = ContentScale.FillBounds,
                             contentDescription = "Front image"

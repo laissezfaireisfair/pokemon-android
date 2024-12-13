@@ -27,21 +27,17 @@ class MainActivity : ComponentActivity() {
                     startDestination = Screens.Overview.route,
                 ) {
                     composable(Screens.Overview.route) {
-                        OverviewScreen(
-                            navHostController = navHostController,
-                            viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewMode() }
-                        )
+                        OverviewScreen(navHostController = navHostController,
+                            viewModel = viewModel<OverviewScreenViewModel>().apply { setPreviewModeOk() })
                     }
                     composable("${Screens.Details.route}/{pokemonId}") { navBackStackEntry ->
                         val pokemonId =
                             navBackStackEntry.arguments?.getString("pokemonId")?.toIntOrNull()
                                 ?: throw IllegalArgumentException("Pokemon ID expected when navigating to details")
 
-                        DetailsScreen(
-                            navHostController = navHostController,
+                        DetailsScreen(navHostController = navHostController,
                             pokemonId = pokemonId,
-                            viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewMode() }
-                        )
+                            viewModel = viewModel<DetailsScreenViewModel>().apply { setPreviewModeOk() })
                     }
                 }
 
