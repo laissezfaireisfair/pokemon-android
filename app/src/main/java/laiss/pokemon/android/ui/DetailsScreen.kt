@@ -77,7 +77,7 @@ fun DetailsScreen(
     viewModel: DetailsScreenViewModel = viewModel(),
     pokemonId: Int
 ) {
-//    viewModel.launch(pokemonId)
+    viewModel.launch(pokemonId)
 
     val state = viewModel.uiState.collectAsState().value
 

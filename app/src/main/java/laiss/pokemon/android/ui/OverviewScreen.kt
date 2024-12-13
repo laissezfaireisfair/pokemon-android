@@ -59,7 +59,7 @@ fun OverviewScreenPreviewError() = PokemonAndroidTheme {
 fun OverviewScreen(
     navHostController: NavHostController, viewModel: OverviewScreenViewModel = viewModel()
 ) {
-//    viewModel.refresh()
+    viewModel.refresh()
 
     val state = viewModel.uiState.collectAsState().value
 

@@ -40,7 +40,11 @@ class DetailsScreenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 
+    private var _isPreview = false
+
     fun launch(pokemonId: Int) {
+        if (_isPreview) return
+
         viewModelScope.launch {
             _uiState.update { DetailsScreenState(isLoading = true) }
             try {
@@ -53,6 +57,7 @@ class DetailsScreenViewModel : ViewModel() {
     }
 
     fun setPreviewModeOk() {
+        _isPreview = true
         _uiState.update {
             DetailsScreenState(
                 details = Details(
@@ -69,7 +74,13 @@ class DetailsScreenViewModel : ViewModel() {
         }
     }
 
-    fun setPreviewModeLoading() = _uiState.update { DetailsScreenState(isLoading = true) }
+    fun setPreviewModeLoading() {
+        _isPreview = true
+        _uiState.update { DetailsScreenState(isLoading = true) }
+    }
 
-    fun setPreviewModeError() = _uiState.update { DetailsScreenState(error = "404. Not found") }
+    fun setPreviewModeError() {
+        _isPreview = true
+        _uiState.update { DetailsScreenState(error = "404. Not found") }
+    }
 }
