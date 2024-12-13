@@ -53,6 +53,9 @@ class DetailsScreenViewModel : ViewModel() {
             } catch (exception: Exception) {
                 _uiState.update { DetailsScreenState(error = exception.message) }
             }
+            catch (error: Error) {
+                _uiState.update { DetailsScreenState(error = error.message) }
+            }
         }
     }
 

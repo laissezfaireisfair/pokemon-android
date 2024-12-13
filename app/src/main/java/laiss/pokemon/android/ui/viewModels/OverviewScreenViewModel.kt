@@ -42,6 +42,9 @@ class OverviewScreenViewModel : ViewModel() {
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             }
+            catch (error: Error) {
+                _uiState.update { OverviewScreenState(error = error.message) }
+            }
         }
     }
 
