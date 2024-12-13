@@ -8,6 +8,6 @@ class Pokemon(
     val weight: Double,
     val types: List<PokemonType>,
     val attack: Int,
-    val defence: Int,
+    val defense: Int,
     val hp: Int
 )

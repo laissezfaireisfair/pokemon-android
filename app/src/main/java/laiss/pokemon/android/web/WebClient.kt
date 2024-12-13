@@ -17,7 +17,7 @@ object WebClient {
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     suspend fun getPokemonHeadersList(offset: Int, count: Int) =
-        preformGetRequest<PokemonHeadersListDto>("$BASE_URL/pokemon/?offset=$offset&count=$count")
+        preformGetRequest<PokemonHeadersListDto>("$BASE_URL/pokemon/?limit=$count&offset=$offset")
 
     suspend fun getPokemon(name: String) = preformGetRequest<PokemonDto>("$BASE_URL/pokemon/$name/")
 
@@ -28,7 +28,8 @@ object WebClient {
             response.body?.string()
         }?.let {
             try {
-                Json.decodeFromString<T>(it)
+                val json = Json {ignoreUnknownKeys = true}
+                json.decodeFromString<T>(it)
             } catch (exception: SerializationException) {
                 throw IOException("Bad JSON received $exception")
             } catch (exception: IllegalArgumentException) {

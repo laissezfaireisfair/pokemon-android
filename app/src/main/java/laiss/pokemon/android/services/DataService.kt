@@ -12,9 +12,9 @@ fun PokemonDto.toModel() = Pokemon(
     imageUrl = sprites.front_default,
     height = height,
     weight = weight,
-    types = types.map { PokemonType.valueOf(it.type.name) },
+    types = types.map { PokemonType[it.type.name] ?: PokemonType.Unknown },
     attack = stats.first { it.stat.name == "attack" }.base_stat,
-    defence = stats.first { it.stat.name == "defence" }.base_stat,
+    defense = stats.first { it.stat.name == "defense" }.base_stat,
     hp = stats.first { it.stat.name == "hp" }.base_stat
 )
 
@@ -22,7 +22,7 @@ object DataService {
     private val pokemonByName = mutableMapOf<String, Pokemon>()
     private val pokemonList = mutableListOf<Pokemon?>()  // Index is id - 1
     private val isInitialized
-        get() = pokemonList.isEmpty()
+        get() = pokemonList.isEmpty().not()
 
     suspend fun isPokemonEndReached(offset: Int): Boolean {
         ensureIsInitialized()
@@ -38,7 +38,7 @@ object DataService {
 
         val headerList = WebClient.getPokemonHeadersList(offset, count)
 
-        if (!isInitialized) pokemonList.addAll(List(headerList.count) { null })
+        if (isInitialized.not()) pokemonList.addAll(List(headerList.count) { null })
 
         return headerList.results.map { getPokemonByName(it.name) }
     }
@@ -54,7 +54,8 @@ object DataService {
         val cachedPokemon = pokemonByName[pokemonName]
         if (cachedPokemon != null) return cachedPokemon
 
-        val pokemon = WebClient.getPokemon(pokemonName).toModel()
+        val pokemonDto = WebClient.getPokemon(pokemonName)
+        val pokemon = pokemonDto.toModel()
         pokemonList[pokemon.id - 1] = pokemon
         pokemonByName[pokemon.name] = pokemon
         return pokemon

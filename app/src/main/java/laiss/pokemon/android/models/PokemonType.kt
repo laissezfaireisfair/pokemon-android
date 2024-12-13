@@ -20,5 +20,9 @@ enum class PokemonType(val typeString: String) {
     Steel("steel"),
     Fairy("fairy"),
     Stellar("stellar"),
-    Unknown("???"),
+    Unknown("???");
+
+    companion object {
+        operator fun get(typeString: String) = entries.firstOrNull { it.typeString == typeString }
+    }
 }
