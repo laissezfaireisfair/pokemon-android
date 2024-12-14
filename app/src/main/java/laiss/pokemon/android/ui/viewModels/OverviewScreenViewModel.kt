@@ -80,12 +80,17 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
     }
 
     fun reloadFromRandomPage() {
+        val minOnPage = 30
+
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
                 val (newPage, newPagingOffset) = pokemonRepository.getRandomPageNumberAndOffset()
                 val entries =
                     pokemonRepository.getPage(newPage, newPagingOffset).map { it.toEntry() }
+                        .toMutableList()
+                if (entries.size < minOnPage)  // Random page can start even on last element
+                    entries += pokemonRepository.getPage(0, newPagingOffset).map { it.toEntry() }
                 _uiState.update {
                     OverviewScreenState(
                         entries = entries,
