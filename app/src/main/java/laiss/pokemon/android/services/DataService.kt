@@ -1,5 +1,8 @@
 package laiss.pokemon.android.services
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import laiss.pokemon.android.models.Pokemon
 import laiss.pokemon.android.models.PokemonType
 import laiss.pokemon.android.web.PokemonDto
@@ -32,15 +35,16 @@ object DataService {
     suspend fun getPokemonList(offset: Int, count: Int): List<Pokemon> {
         if (isInitialized) {
             val cached = pokemonList.asSequence().drop(offset).take(count)
-            if (cached.all { it != null })
-                return cached.map { it!! }.toList()
+            if (cached.all { it != null }) return cached.map { it!! }.toList()
         }
 
         val headerList = WebClient.getPokemonHeadersList(offset, count)
 
         if (isInitialized.not()) pokemonList.addAll(List(headerList.count) { null })
 
-        return headerList.results.map { getPokemonByName(it.name) }
+        return coroutineScope {
+            headerList.results.map { async { getPokemonByName(it.name) } }.awaitAll()
+        }
     }
 
     suspend fun getPokemonRandomValidOffset(count: Int): Int {
