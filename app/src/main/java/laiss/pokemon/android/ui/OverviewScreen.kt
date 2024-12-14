@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,35 +40,49 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewOk, onPokemonClick = {})
+    OverviewScreenBody(
+        state = OverviewScreenState.previewOk,
+        onPokemonClick = {},
+        onReloadClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewLoading, onPokemonClick = {})
+    OverviewScreenBody(
+        state = OverviewScreenState.previewLoading,
+        onPokemonClick = {},
+        onReloadClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewError() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewError, onPokemonClick = {})
+    OverviewScreenBody(
+        state = OverviewScreenState.previewError,
+        onPokemonClick = {},
+        onReloadClick = {})
 }
 
 @Composable
 fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
     OverviewScreenBody(state = state,
-        onPokemonClick = { navHostController.navigateToDetails(it.lowercase()) })
+        onPokemonClick = { navHostController.navigateToDetails(it.lowercase()) },
+        onReloadClick = { viewModel.reloadFromRandomPage() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreenBody(
-    state: OverviewScreenState, onPokemonClick: (String) -> Unit
+    state: OverviewScreenState, onPokemonClick: (String) -> Unit, onReloadClick: () -> Unit
 ) {
     Scaffold(topBar = {
-        TopAppBar(title = { Text(text = "Overview") })
+        TopAppBar(title = { Text(text = "Overview") },
+            navigationIcon = {
+                IconButton(onReloadClick)
+                { Icon(Icons.Default.Refresh, contentDescription = "Reload from random place") }
+            })
     }) { innerPadding ->
         when {
             state.isLoading -> Column(

@@ -65,19 +65,26 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
     val uiState = _uiState.asStateFlow()
 
     init {
-        initialize()
-    }
-
-    fun initialize(randomStart: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
-                val pokemonList = when {
-                    randomStart -> pokemonRepository.getRandomPage()
-                    else -> pokemonRepository.getPage(0)
-                }
-                val entries = pokemonList.map { it.toEntry() }
+                val entries = pokemonRepository.getPage(0).map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
+            } catch (exception: Exception) {
+                _uiState.update { OverviewScreenState(error = exception.message) }
+            } catch (error: Error) {
+                _uiState.update { OverviewScreenState(error = error.message) }
+            }
+        }
+    }
+
+    fun reloadFromRandomPage() {
+        viewModelScope.launch {
+            _uiState.update { OverviewScreenState(isLoading = true) }
+            try {
+                val (newPage, pokemonList) = pokemonRepository.getRandomPage()
+                val entries = pokemonList.map { it.toEntry() }
+                _uiState.update { OverviewScreenState(entries = entries, page = newPage) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             } catch (error: Error) {

@@ -84,9 +84,10 @@ class PokemonRepository(
         }
     }
 
-    suspend fun getRandomPage(): List<Pokemon> {
+    suspend fun getRandomPage(): Pair<Int, List<Pokemon>> {
         ensureIsInitialized()
-        return getPage(Random.nextInt(0, pokemonListCache.size - pageSize))
+        val number = Random.nextInt(0, pokemonListCache.size / pageSize)
+        return number to getPage(number)
     }
 
     suspend fun getPokemonByName(pokemonName: String): Pokemon {
