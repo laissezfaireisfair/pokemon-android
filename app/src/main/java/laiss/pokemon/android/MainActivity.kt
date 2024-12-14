@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 
         val httpClient = OkHttpClient()
         val pokeApiDataSource = PokeApiDataSource(httpClient)
-        val pokemonRepository = PokemonRepository(pokeApiDataSource)
+        val pokemonRepository = PokemonRepository(pokeApiDataSource, 30)
 
         enableEdgeToEdge()
         setContent {

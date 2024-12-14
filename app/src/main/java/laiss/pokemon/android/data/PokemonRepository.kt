@@ -58,25 +58,24 @@ fun PokemonDto.toModel() = Pokemon(
     hp = stats.first { it.stat.name == "hp" }.base_stat
 )
 
-class PokemonRepository(private val pokeApiDataSource: PokeApiDataSource) {
+class PokemonRepository(
+    private val pokeApiDataSource: PokeApiDataSource,
+    private val pageSize: Int
+) {
     private val pokemonByNameCache = mutableMapOf<String, Pokemon>()
     private val pokemonListCache = mutableListOf<Pokemon?>()  // Index is id - 1
 
     private val isInitialized
         get() = pokemonListCache.isEmpty().not()
 
-    suspend fun isPokemonEndReached(offset: Int): Boolean {
-        ensureIsInitialized()
-        return pokemonListCache.count() <= offset
-    }
-
-    suspend fun getPokemonList(offset: Int, count: Int): List<Pokemon> {
+    suspend fun getPage(number: Int): List<Pokemon> {
+        val offset = pageSize * number
         if (isInitialized) {
-            val cached = pokemonListCache.asSequence().drop(offset).take(count)
+            val cached = pokemonListCache.asSequence().drop(offset).take(pageSize)
             if (cached.all { it != null }) return cached.map { it!! }.toList()
         }
 
-        val headerList = pokeApiDataSource.getPokemonHeadersList(offset, count)
+        val headerList = pokeApiDataSource.getPokemonHeadersList(offset, pageSize)
 
         if (isInitialized.not()) pokemonListCache.addAll(List(headerList.count) { null })
 
@@ -85,9 +84,9 @@ class PokemonRepository(private val pokeApiDataSource: PokeApiDataSource) {
         }
     }
 
-    suspend fun getPokemonRandomValidOffset(count: Int): Int {
+    suspend fun getRandomPage(): List<Pokemon> {
         ensureIsInitialized()
-        return Random.nextInt(0, pokemonListCache.count() - count)
+        return getPage(Random.nextInt(0, pokemonListCache.size - pageSize))
     }
 
     suspend fun getPokemonByName(pokemonName: String): Pokemon {
@@ -106,6 +105,6 @@ class PokemonRepository(private val pokeApiDataSource: PokeApiDataSource) {
     private suspend fun ensureIsInitialized() {
         if (isInitialized) return
 
-        getPokemonList(0, 1)
+        getPage(0)
     }
 }

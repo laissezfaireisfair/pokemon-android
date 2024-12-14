@@ -17,7 +17,8 @@ fun Pokemon.toEntry() = OverviewScreenEntry(name = name.capitalize(), imageUrl =
 data class OverviewScreenState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val offset: Int = 0,
+    val page: Int = 0,
+    val isEndReached: Boolean = false,
     val entries: List<OverviewScreenEntry> = emptyList()
 ) {
     companion object {
@@ -60,23 +61,22 @@ data class OverviewScreenState(
 }
 
 class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
-    private val pokemonInBatch = 30
-
     private val _uiState = MutableStateFlow(OverviewScreenState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        refresh()
+        initialize()
     }
 
-    fun refresh(randomStart: Boolean = false) {  // TODO: Separate random logic
+    fun initialize(randomStart: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
-                val offset =
-                    if (randomStart) pokemonRepository.getPokemonRandomValidOffset(pokemonInBatch) else 0
-                val entries =
-                    pokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
+                val pokemonList = when {
+                    randomStart -> pokemonRepository.getRandomPage()
+                    else -> pokemonRepository.getPage(0)
+                }
+                val entries = pokemonList.map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
@@ -86,19 +86,19 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
         }
     }
 
-    fun loadNext() {
+    fun loadNextPage() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val offset = _uiState.value.offset + pokemonInBatch
             try {
-                val isEndReached = pokemonRepository.isPokemonEndReached(offset)
-                if (isEndReached) {
-                    _uiState.update { it.copy(isLoading = false) }
-                    return@launch
-                }
                 val newEntries =
-                    pokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
-                _uiState.update { it.copy(entries = it.entries + newEntries) }
+                    pokemonRepository.getPage(uiState.value.page + 1).map { it.toEntry() }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        entries = it.entries + newEntries,
+                        isEndReached = newEntries.isEmpty()
+                    )
+                }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             }
