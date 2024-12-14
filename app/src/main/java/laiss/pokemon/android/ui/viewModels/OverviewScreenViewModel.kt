@@ -10,7 +10,7 @@ import laiss.pokemon.android.data.Pokemon
 import laiss.pokemon.android.data.PokemonRepository
 import laiss.pokemon.android.utils.capitalize
 
-data class OverviewScreenEntry(val name: String, val imageUrl: String)
+data class OverviewScreenEntry(val name: String, val imageUrl: String?)
 
 fun Pokemon.toEntry() = OverviewScreenEntry(name = name.capitalize(), imageUrl = imageUrl)
 
@@ -18,6 +18,7 @@ data class OverviewScreenState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val page: Int = 0,
+    val pagingOffset: Int = 0,
     val isEndReached: Boolean = false,
     val entries: List<OverviewScreenEntry> = emptyList()
 ) {
@@ -82,9 +83,16 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
-                val (newPage, pokemonList) = pokemonRepository.getRandomPage()
-                val entries = pokemonList.map { it.toEntry() }
-                _uiState.update { OverviewScreenState(entries = entries, page = newPage) }
+                val (newPage, newPagingOffset) = pokemonRepository.getRandomPageNumberAndOffset()
+                val entries =
+                    pokemonRepository.getPage(newPage, newPagingOffset).map { it.toEntry() }
+                _uiState.update {
+                    OverviewScreenState(
+                        entries = entries,
+                        page = newPage,
+                        pagingOffset = newPagingOffset
+                    )
+                }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             } catch (error: Error) {

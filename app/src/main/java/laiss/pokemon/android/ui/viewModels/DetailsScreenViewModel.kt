@@ -12,7 +12,7 @@ import laiss.pokemon.android.utils.capitalize
 
 data class Details(
     val name: String,
-    val imageUrl: String,
+    val imageUrl: String?,
     val weight: String,
     val height: String,
     val types: List<String>,

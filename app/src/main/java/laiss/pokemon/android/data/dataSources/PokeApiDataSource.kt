@@ -18,7 +18,7 @@ data class PokemonHeaderDto(val name: String)
 data class PokemonHeadersListDto(val count: Int, val results: List<PokemonHeaderDto>)
 
 @Serializable
-data class PokemonSpritesDto(val front_default: String)
+data class PokemonSpritesDto(val front_default: String?)
 
 @Serializable
 data class PokemonTypeDto(val name: String)

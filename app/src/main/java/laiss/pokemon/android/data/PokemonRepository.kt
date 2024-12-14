@@ -37,7 +37,7 @@ enum class PokemonType(val typeString: String) {
 class Pokemon(
     val id: Int,
     val name: String,
-    val imageUrl: String,
+    val imageUrl: String?,
     val height: Double,
     val weight: Double,
     val types: List<PokemonType>,
@@ -63,13 +63,13 @@ class PokemonRepository(
     private val pageSize: Int
 ) {
     private val pokemonByNameCache = mutableMapOf<String, Pokemon>()
-    private val pokemonListCache = mutableListOf<Pokemon?>()  // Index is id - 1
+    private val pokemonListCache = mutableListOf<Pokemon?>()
 
     private val isInitialized
         get() = pokemonListCache.isEmpty().not()
 
-    suspend fun getPage(number: Int): List<Pokemon> {
-        val offset = pageSize * number
+    suspend fun getPage(number: Int, pagingOffset: Int = 0): List<Pokemon> {
+        val offset = pageSize * number + pagingOffset
         if (isInitialized) {
             val cached = pokemonListCache.asSequence().drop(offset).take(pageSize)
             if (cached.all { it != null }) return cached.map { it!! }.toList()
@@ -79,15 +79,18 @@ class PokemonRepository(
 
         if (isInitialized.not()) pokemonListCache.addAll(List(headerList.count) { null })
 
-        return coroutineScope {
+        val pokemonList = coroutineScope {
             headerList.results.map { async { getPokemonByName(it.name) } }.awaitAll()
         }
+        pokemonList.forEachIndexed { i, pokemon -> pokemonListCache[offset + i] = pokemon }
+        return pokemonList
     }
 
-    suspend fun getRandomPage(): Pair<Int, List<Pokemon>> {
+    suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
         ensureIsInitialized()
-        val number = Random.nextInt(0, pokemonListCache.size / pageSize)
-        return number to getPage(number)
+        val pageNumber = Random.nextInt(0, pokemonListCache.size / pageSize)
+        val pagingOffset = Random.nextInt(0, pageSize)
+        return pageNumber to pagingOffset
     }
 
     suspend fun getPokemonByName(pokemonName: String): Pokemon {
@@ -96,9 +99,7 @@ class PokemonRepository(
         val cachedPokemon = pokemonByNameCache[pokemonName]
         if (cachedPokemon != null) return cachedPokemon
 
-        val pokemonDto = pokeApiDataSource.getPokemon(pokemonName)
-        val pokemon = pokemonDto.toModel()
-        pokemonListCache[pokemon.id - 1] = pokemon
+        val pokemon = pokeApiDataSource.getPokemon(pokemonName).toModel()
         pokemonByNameCache[pokemon.name] = pokemon
         return pokemon
     }
