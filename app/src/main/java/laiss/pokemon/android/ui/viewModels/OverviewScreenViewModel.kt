@@ -10,9 +10,21 @@ import laiss.pokemon.android.data.Pokemon
 import laiss.pokemon.android.data.PokemonRepository
 import laiss.pokemon.android.utils.capitalize
 
-data class OverviewScreenEntry(val name: String, val imageUrl: String?)
+data class OverviewScreenEntry(
+    val name: String,
+    val imageUrl: String?,
+    val attack: Int,
+    val defense: Int,
+    val hp: Int
+)
 
-fun Pokemon.toEntry() = OverviewScreenEntry(name = name.capitalize(), imageUrl = imageUrl)
+fun Pokemon.toEntry() = OverviewScreenEntry(
+    name = name.capitalize(),
+    imageUrl = imageUrl,
+    attack = attack,
+    defense = defense,
+    hp = hp
+)
 
 data class OverviewScreenState(
     val isLoading: Boolean = false,
@@ -20,6 +32,9 @@ data class OverviewScreenState(
     val page: Int = 0,
     val pagingOffset: Int = 0,
     val isEndReached: Boolean = false,
+    val isAttackSortRequested: Boolean = false,
+    val isDefenseSortRequested: Boolean = false,
+    val isHpSortRequested: Boolean = false,
     val entries: List<OverviewScreenEntry> = emptyList()
 ) {
     companion object {
@@ -28,27 +43,33 @@ data class OverviewScreenState(
                 entries = listOf(
                     OverviewScreenEntry(
                         name = "bulbasaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                     OverviewScreenEntry(
                         name = "ivysaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                     OverviewScreenEntry(
                         name = "venusaur".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                     OverviewScreenEntry(
                         name = "charmander".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                     OverviewScreenEntry(
                         name = "charmeleon".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                     OverviewScreenEntry(
                         name = "squirtle".capitalize(),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
+                        attack = 10, defense = 20, hp = 30
                     ),
                 )
             )
@@ -126,6 +147,27 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             }
+        }
+    }
+
+    fun changeSortByAttackStatus(newStatus: Boolean) {
+        _uiState.update { it.copy(isAttackSortRequested = newStatus) }
+        viewModelScope.launch {
+            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.attack }) }
+        }
+    }
+
+    fun changeSortByDefenseStatus(newStatus: Boolean) {
+        _uiState.update { it.copy(isDefenseSortRequested = newStatus) }
+        viewModelScope.launch {
+            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.defense }) }
+        }
+    }
+
+    fun changeSortByHpStatus(newStatus: Boolean) {
+        _uiState.update { it.copy(isHpSortRequested = newStatus) }
+        viewModelScope.launch {
+            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.hp }) }
         }
     }
 }

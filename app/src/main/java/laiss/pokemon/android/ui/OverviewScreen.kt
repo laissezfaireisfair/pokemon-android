@@ -9,15 +9,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,46 +50,45 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewOk,
-        onPokemonClick = {},
-        onReloadClick = {},
-        onListEndReached = {})
+    OverviewScreenBody(state = OverviewScreenState.previewOk)
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewLoading,
-        onPokemonClick = {},
-        onReloadClick = {},
-        onListEndReached = {})
+    OverviewScreenBody(state = OverviewScreenState.previewLoading)
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewError() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewError,
-        onPokemonClick = {},
-        onReloadClick = {},
-        onListEndReached = {})
+    OverviewScreenBody(state = OverviewScreenState.previewError)
 }
 
 @Composable
 fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
-    OverviewScreenBody(state = state,
+    OverviewScreenBody(
+        state = state,
         onPokemonClick = { navHostController.navigateToDetails(it.lowercase()) },
         onReloadClick = { viewModel.reloadFromRandomPage() },
-        onListEndReached = { viewModel.loadNextPage() })
+        onListEndReached = { viewModel.loadNextPage() },
+        onAttackSortCheckedChange = { viewModel.changeSortByAttackStatus(it) },
+        onDefenseSortCheckedChange = { viewModel.changeSortByDefenseStatus(it) },
+        onHpSortCheckedChange = { viewModel.changeSortByHpStatus(it) }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreenBody(
     state: OverviewScreenState,
-    onPokemonClick: (String) -> Unit,
-    onReloadClick: () -> Unit,
-    onListEndReached: () -> Unit
+    onPokemonClick: (String) -> Unit = {},
+    onReloadClick: () -> Unit = {},
+    onListEndReached: () -> Unit = {},
+    onAttackSortCheckedChange: (Boolean) -> Unit = {},
+    onDefenseSortCheckedChange: (Boolean) -> Unit = {},
+    onHpSortCheckedChange: (Boolean) -> Unit = {}
 ) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "Overview") }, navigationIcon = {
@@ -125,6 +127,33 @@ fun OverviewScreenBody(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    item() {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = state.isAttackSortRequested,
+                                    onCheckedChange = onAttackSortCheckedChange
+                                )
+                                Text("Attack")
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Checkbox(
+                                    checked = state.isDefenseSortRequested,
+                                    onCheckedChange = onDefenseSortCheckedChange
+                                )
+                                Text("Defense")
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Checkbox(
+                                    checked = state.isHpSortRequested,
+                                    onCheckedChange = onHpSortCheckedChange
+                                )
+                                Text("Hp")
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     items(items = state.entries, key = { it.name }) {
                         ElevatedCard(onClick = { onPokemonClick(it.name) }) {
                             Row(
