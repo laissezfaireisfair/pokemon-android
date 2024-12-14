@@ -47,8 +47,7 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
-    OverviewScreenBody(
-        state = OverviewScreenState.previewOk,
+    OverviewScreenBody(state = OverviewScreenState.previewOk,
         onPokemonClick = {},
         onReloadClick = {},
         onListEndReached = {})
@@ -57,8 +56,7 @@ fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
-    OverviewScreenBody(
-        state = OverviewScreenState.previewLoading,
+    OverviewScreenBody(state = OverviewScreenState.previewLoading,
         onPokemonClick = {},
         onReloadClick = {},
         onListEndReached = {})
@@ -67,8 +65,7 @@ fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewError() = PokemonAndroidTheme {
-    OverviewScreenBody(
-        state = OverviewScreenState.previewError,
+    OverviewScreenBody(state = OverviewScreenState.previewError,
         onPokemonClick = {},
         onReloadClick = {},
         onListEndReached = {})
@@ -86,15 +83,20 @@ fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScre
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreenBody(
-    state: OverviewScreenState, onPokemonClick: (String) -> Unit, onReloadClick: () -> Unit,
+    state: OverviewScreenState,
+    onPokemonClick: (String) -> Unit,
+    onReloadClick: () -> Unit,
     onListEndReached: () -> Unit
 ) {
     Scaffold(topBar = {
-        TopAppBar(title = { Text(text = "Overview") },
-            navigationIcon = {
-                IconButton(onReloadClick)
-                { Icon(Icons.Default.Refresh, contentDescription = "Reload from random place") }
-            })
+        TopAppBar(title = { Text(text = "Overview") }, navigationIcon = {
+            IconButton(onReloadClick) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = "Reload from random place"
+                )
+            }
+        })
     }) { innerPadding ->
         when {
             state.isLoading && state.entries.isEmpty() -> Column(
@@ -141,6 +143,16 @@ fun OverviewScreenBody(
                             }
                         }
                     }
+
+                    item {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
                 }
 
                 RegisterListEndCallback(listState = listState, onListEndReached = onListEndReached)
@@ -151,9 +163,7 @@ fun OverviewScreenBody(
 
 @Composable
 fun RegisterListEndCallback(
-    listState: LazyListState,
-    buffer: Int = 4,
-    onListEndReached: () -> Unit
+    listState: LazyListState, buffer: Int = 4, onListEndReached: () -> Unit
 ) {
     val isListEndReached = remember {
         derivedStateOf {
@@ -166,8 +176,7 @@ fun RegisterListEndCallback(
     }
 
     LaunchedEffect(isListEndReached) {
-        snapshotFlow { isListEndReached.value }
-            .distinctUntilChanged()
+        snapshotFlow { isListEndReached.value }.distinctUntilChanged()
             .collect { onListEndReached() }
     }
 }
