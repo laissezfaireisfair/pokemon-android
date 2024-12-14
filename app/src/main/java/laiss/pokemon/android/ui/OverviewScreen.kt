@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -69,7 +70,7 @@ fun OverviewScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-            ) { Text("Loading...", color = Subtext0) }
+            ) { CircularProgressIndicator() }
 
             state.error != null -> Column(
                 modifier = Modifier.fillMaxSize(),
@@ -88,7 +89,7 @@ fun OverviewScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.entries) {
+                items(items = state.entries, key = {it.name}) {
                     ElevatedCard(onClick = { navHostController.navigateToDetails(it.name.lowercase()) }) {
                         Row(
                             modifier = Modifier

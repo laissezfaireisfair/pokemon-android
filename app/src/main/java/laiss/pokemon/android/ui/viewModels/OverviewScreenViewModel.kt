@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import laiss.pokemon.android.models.Pokemon
-import laiss.pokemon.android.services.DataService
+import laiss.pokemon.android.data.Pokemon
+import laiss.pokemon.android.data.PokemonRepository
 import laiss.pokemon.android.utils.capitalize
 
 data class OverviewScreenEntry(val name: String, val imageUrl: String)
@@ -38,9 +38,9 @@ class OverviewScreenViewModel(private val isPreview: Boolean = false) : ViewMode
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
                 val offset =
-                    if (randomStart) DataService.getPokemonRandomValidOffset(pokemonInBatch) else 0
+                    if (randomStart) PokemonRepository.getPokemonRandomValidOffset(pokemonInBatch) else 0
                 val entries =
-                    DataService.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
+                    PokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
@@ -57,13 +57,13 @@ class OverviewScreenViewModel(private val isPreview: Boolean = false) : ViewMode
             _uiState.update { it.copy(isLoading = true) }
             val offset = _uiState.value.offset + pokemonInBatch
             try {
-                val isEndReached = DataService.isPokemonEndReached(offset)
+                val isEndReached = PokemonRepository.isPokemonEndReached(offset)
                 if (isEndReached) {
                     _uiState.update { it.copy(isLoading = false) }
                     return@launch
                 }
                 val newEntries =
-                    DataService.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
+                    PokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { it.copy(entries = it.entries + newEntries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }

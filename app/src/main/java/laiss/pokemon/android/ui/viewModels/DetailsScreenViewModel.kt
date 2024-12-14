@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import laiss.pokemon.android.models.Pokemon
-import laiss.pokemon.android.services.DataService
+import laiss.pokemon.android.data.Pokemon
+import laiss.pokemon.android.data.PokemonRepository
 import laiss.pokemon.android.utils.capitalize
 
 data class Details(
@@ -28,7 +28,7 @@ fun Pokemon.toDetails() = Details(
     height = height.toString(),
     types = types.map { it.typeString },
     attack = attack.toString(),
-    defence = attack.toString(),
+    defence = defense.toString(),
     hp = hp.toString()
 )
 
@@ -44,7 +44,7 @@ class DetailsScreenViewModel(pokemonName: String, isPreview: Boolean = false) : 
         if (isPreview.not()) viewModelScope.launch {
             _uiState.update { DetailsScreenState(isLoading = true) }
             try {
-                val pokemon = DataService.getPokemonByName(pokemonName)
+                val pokemon = PokemonRepository.getPokemonByName(pokemonName)
                 _uiState.update { DetailsScreenState(details = pokemon.toDetails()) }
             } catch (exception: Exception) {
                 _uiState.update { DetailsScreenState(error = exception.message) }
