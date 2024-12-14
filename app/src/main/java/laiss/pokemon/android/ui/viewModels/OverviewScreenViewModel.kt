@@ -107,16 +107,20 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
     }
 
     fun loadNextPage() {
+        if (uiState.value.isEndReached) return
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val newEntries =
-                    pokemonRepository.getPage(uiState.value.page + 1).map { it.toEntry() }
+                    pokemonRepository.getPage(uiState.value.page + 1, uiState.value.pagingOffset)
+                        .map { it.toEntry() }
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         entries = it.entries + newEntries,
-                        isEndReached = newEntries.isEmpty()
+                        isEndReached = newEntries.isEmpty(),
+                        page = it.page + 1
                     )
                 }
             } catch (exception: Exception) {
