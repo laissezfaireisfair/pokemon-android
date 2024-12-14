@@ -32,46 +32,44 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext0
 import laiss.pokemon.android.ui.theme.Subtext1
+import laiss.pokemon.android.ui.viewModels.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
-    DetailsScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setOkPreview() })
+    DetailsScreenBody(state = DetailsScreenState.previewOk, onBackClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
-    DetailsScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setLoadingPreview() })
+    DetailsScreenBody(state = DetailsScreenState.previewLoading, onBackClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun DetailsScreenPreviewError() = PokemonAndroidTheme {
-    DetailsScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<DetailsScreenViewModel> { DetailsScreenViewModel("bulbasaur") }.apply { setErrorPreview() })
+    DetailsScreenBody(state = DetailsScreenState.previewError, onBackClick = {})
+}
+
+@Composable
+fun DetailsScreen(navHostController: NavHostController, viewModel: DetailsScreenViewModel) {
+    val state = viewModel.uiState.collectAsState().value
+    DetailsScreenBody(state = state, onBackClick = { navHostController.navigateUp() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsScreen(
-    navHostController: NavHostController, viewModel: DetailsScreenViewModel
-) {
-    val state = viewModel.uiState.collectAsState().value
-
+fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "Details") }, navigationIcon = {
-            IconButton(onClick = { navHostController.navigateUp() }) {
+            IconButton(onClick = onBackClick) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, "Navigate back")
             }
         })

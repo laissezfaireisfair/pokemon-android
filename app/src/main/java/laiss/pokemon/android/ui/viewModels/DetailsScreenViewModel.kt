@@ -34,17 +34,40 @@ fun Pokemon.toDetails() = Details(
 
 data class DetailsScreenState(
     val isLoading: Boolean = false, val error: String? = null, val details: Details? = null
-)
+) {
+    companion object {
+        val previewOk: DetailsScreenState
+            get() = DetailsScreenState(
+                details = Details(
+                    name = "bulbasaur".capitalize(),
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+                    weight = 69.0.toString(),
+                    height = 7.0.toString(),
+                    types = listOf("grass", "poison"),
+                    attack = 49.toString(),
+                    defence = 49.toString(),
+                    hp = 45.toString()
+                )
+            )
+        val previewLoading: DetailsScreenState
+            get() = DetailsScreenState(isLoading = true)
 
-class DetailsScreenViewModel(pokemonName: String, isPreview: Boolean = false) : ViewModel() {
+        val previewError: DetailsScreenState
+            get() = DetailsScreenState(error = "404. Not found")
+    }
+}
+
+class DetailsScreenViewModel(
+    private val pokemonRepository: PokemonRepository, pokemonName: String
+) : ViewModel() {
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        if (isPreview.not()) viewModelScope.launch {
+        viewModelScope.launch {
             _uiState.update { DetailsScreenState(isLoading = true) }
             try {
-                val pokemon = PokemonRepository.getPokemonByName(pokemonName)
+                val pokemon = pokemonRepository.getPokemonByName(pokemonName)
                 _uiState.update { DetailsScreenState(details = pokemon.toDetails()) }
             } catch (exception: Exception) {
                 _uiState.update { DetailsScreenState(error = exception.message) }
@@ -53,23 +76,4 @@ class DetailsScreenViewModel(pokemonName: String, isPreview: Boolean = false) : 
             }
         }
     }
-
-    fun setOkPreview() = _uiState.update {
-        DetailsScreenState(
-            details = Details(
-                name = "bulbasaur".capitalize(),
-                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-                weight = 69.0.toString(),
-                height = 7.0.toString(),
-                types = listOf("grass", "poison"),
-                attack = 49.toString(),
-                defence = 49.toString(),
-                hp = 45.toString()
-            )
-        )
-    }
-
-    fun setLoadingPreview() = _uiState.update { DetailsScreenState(isLoading = true) }
-
-    fun setErrorPreview() = _uiState.update { DetailsScreenState(error = "404. Not found") }
 }

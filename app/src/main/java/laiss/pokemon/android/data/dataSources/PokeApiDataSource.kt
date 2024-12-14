@@ -43,16 +43,15 @@ data class PokemonDto(
     val stats: List<PokemonStatsDto>
 )
 
-object PokeApiDataSource {
-    private const val BASE_URL = "https://pokeapi.co/api/v2"
-    private val client = OkHttpClient()  // TODO: Share with future possible clients
+class PokeApiDataSource(private val client: OkHttpClient) {
+    private val baseUrl = "https://pokeapi.co/api/v2"
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     suspend fun getPokemonHeadersList(offset: Int, count: Int) =
-        preformGetRequest<PokemonHeadersListDto>("$BASE_URL/pokemon/?limit=$count&offset=$offset")
+        preformGetRequest<PokemonHeadersListDto>("$baseUrl/pokemon/?limit=$count&offset=$offset")
 
-    suspend fun getPokemon(name: String) = preformGetRequest<PokemonDto>("$BASE_URL/pokemon/$name/")
+    suspend fun getPokemon(name: String) = preformGetRequest<PokemonDto>("$baseUrl/pokemon/$name/")
 
     private suspend inline fun <reified T> preformGetRequest(url: String) = scope.async {
         val request = Request.Builder().url(url).build()

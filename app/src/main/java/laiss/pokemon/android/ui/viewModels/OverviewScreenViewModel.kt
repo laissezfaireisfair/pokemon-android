@@ -19,9 +19,47 @@ data class OverviewScreenState(
     val error: String? = null,
     val offset: Int = 0,
     val entries: List<OverviewScreenEntry> = emptyList()
-)
+) {
+    companion object {
+        val previewOk: OverviewScreenState
+            get() = OverviewScreenState(
+                entries = listOf(
+                    OverviewScreenEntry(
+                        name = "bulbasaur".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                    ),
+                    OverviewScreenEntry(
+                        name = "ivysaur".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
+                    ),
+                    OverviewScreenEntry(
+                        name = "venusaur".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
+                    ),
+                    OverviewScreenEntry(
+                        name = "charmander".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                    ),
+                    OverviewScreenEntry(
+                        name = "charmeleon".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
+                    ),
+                    OverviewScreenEntry(
+                        name = "squirtle".capitalize(),
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
+                    ),
+                )
+            )
 
-class OverviewScreenViewModel(private val isPreview: Boolean = false) : ViewModel() {
+        val previewLoading: OverviewScreenState
+            get() = OverviewScreenState(isLoading = true)
+
+        val previewError: OverviewScreenState
+            get() = OverviewScreenState(error = "404. Not found")
+    }
+}
+
+class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
     private val pokemonInBatch = 30
 
     private val _uiState = MutableStateFlow(OverviewScreenState())
@@ -32,15 +70,13 @@ class OverviewScreenViewModel(private val isPreview: Boolean = false) : ViewMode
     }
 
     fun refresh(randomStart: Boolean = false) {  // TODO: Separate random logic
-        if (isPreview) return
-
         viewModelScope.launch {
             _uiState.update { OverviewScreenState(isLoading = true) }
             try {
                 val offset =
-                    if (randomStart) PokemonRepository.getPokemonRandomValidOffset(pokemonInBatch) else 0
+                    if (randomStart) pokemonRepository.getPokemonRandomValidOffset(pokemonInBatch) else 0
                 val entries =
-                    PokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
+                    pokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { OverviewScreenState(entries = entries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
@@ -51,58 +87,21 @@ class OverviewScreenViewModel(private val isPreview: Boolean = false) : ViewMode
     }
 
     fun loadNext() {
-        if (isPreview) return
-
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val offset = _uiState.value.offset + pokemonInBatch
             try {
-                val isEndReached = PokemonRepository.isPokemonEndReached(offset)
+                val isEndReached = pokemonRepository.isPokemonEndReached(offset)
                 if (isEndReached) {
                     _uiState.update { it.copy(isLoading = false) }
                     return@launch
                 }
                 val newEntries =
-                    PokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
+                    pokemonRepository.getPokemonList(offset, pokemonInBatch).map { it.toEntry() }
                 _uiState.update { it.copy(entries = it.entries + newEntries) }
             } catch (exception: Exception) {
                 _uiState.update { OverviewScreenState(error = exception.message) }
             }
         }
     }
-
-    fun setOkPreview() = _uiState.update {
-        OverviewScreenState(
-            entries = listOf(
-                OverviewScreenEntry(
-                    name = "bulbasaur".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
-                ),
-                OverviewScreenEntry(
-                    name = "ivysaur".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
-                ),
-                OverviewScreenEntry(
-                    name = "venusaur".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
-                ),
-                OverviewScreenEntry(
-                    name = "charmander".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
-                ),
-                OverviewScreenEntry(
-                    name = "charmeleon".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
-                ),
-                OverviewScreenEntry(
-                    name = "squirtle".capitalize(),
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
-                ),
-            )
-        )
-    }
-
-    fun setLoadingPreview() = _uiState.update { OverviewScreenState(isLoading = true) }
-
-    fun setErrorPreview() = _uiState.update { OverviewScreenState(error = "404. Not found") }
 }

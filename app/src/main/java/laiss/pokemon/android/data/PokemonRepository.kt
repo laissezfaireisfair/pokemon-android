@@ -58,9 +58,10 @@ fun PokemonDto.toModel() = Pokemon(
     hp = stats.first { it.stat.name == "hp" }.base_stat
 )
 
-object PokemonRepository {
+class PokemonRepository(private val pokeApiDataSource: PokeApiDataSource) {
     private val pokemonByNameCache = mutableMapOf<String, Pokemon>()
     private val pokemonListCache = mutableListOf<Pokemon?>()  // Index is id - 1
+
     private val isInitialized
         get() = pokemonListCache.isEmpty().not()
 
@@ -75,7 +76,7 @@ object PokemonRepository {
             if (cached.all { it != null }) return cached.map { it!! }.toList()
         }
 
-        val headerList = PokeApiDataSource.getPokemonHeadersList(offset, count)
+        val headerList = pokeApiDataSource.getPokemonHeadersList(offset, count)
 
         if (isInitialized.not()) pokemonListCache.addAll(List(headerList.count) { null })
 
@@ -95,7 +96,7 @@ object PokemonRepository {
         val cachedPokemon = pokemonByNameCache[pokemonName]
         if (cachedPokemon != null) return cachedPokemon
 
-        val pokemonDto = PokeApiDataSource.getPokemon(pokemonName)
+        val pokemonDto = pokeApiDataSource.getPokemon(pokemonName)
         val pokemon = pokemonDto.toModel()
         pokemonListCache[pokemon.id - 1] = pokemon
         pokemonByNameCache[pokemon.name] = pokemon

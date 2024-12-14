@@ -25,43 +25,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import laiss.pokemon.android.navigation.navigateToDetails
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext0
+import laiss.pokemon.android.ui.viewModels.OverviewScreenState
 import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
-    OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setOkPreview() })
+    OverviewScreenBody(state = OverviewScreenState.previewOk, onPokemonClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
-    OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setLoadingPreview() })
+    OverviewScreenBody(state = OverviewScreenState.previewLoading, onPokemonClick = {})
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 fun OverviewScreenPreviewError() = PokemonAndroidTheme {
-    OverviewScreen(navHostController = rememberNavController(),
-        viewModel = viewModel<OverviewScreenViewModel> { OverviewScreenViewModel(isPreview = true) }.apply { setErrorPreview() })
+    OverviewScreenBody(state = OverviewScreenState.previewError, onPokemonClick = {})
+}
+
+@Composable
+fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScreenViewModel) {
+    val state = viewModel.uiState.collectAsState().value
+    OverviewScreenBody(state = state,
+        onPokemonClick = { navHostController.navigateToDetails(it.lowercase()) })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OverviewScreen(
-    navHostController: NavHostController, viewModel: OverviewScreenViewModel = viewModel()
+fun OverviewScreenBody(
+    state: OverviewScreenState, onPokemonClick: (String) -> Unit
 ) {
-    val state = viewModel.uiState.collectAsState().value
-
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "Overview") })
     }) { innerPadding ->
@@ -89,8 +90,8 @@ fun OverviewScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(items = state.entries, key = {it.name}) {
-                    ElevatedCard(onClick = { navHostController.navigateToDetails(it.name.lowercase()) }) {
+                items(items = state.entries, key = { it.name }) {
+                    ElevatedCard(onClick = { onPokemonClick(it.name) }) {
                         Row(
                             modifier = Modifier
                                 .padding(8.dp)
