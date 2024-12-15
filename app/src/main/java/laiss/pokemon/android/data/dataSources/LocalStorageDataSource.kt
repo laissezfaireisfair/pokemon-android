@@ -1,6 +1,6 @@
 package laiss.pokemon.android.data.dataSources
 
-import laiss.pokemon.android.data.Pokemon
+import laiss.pokemon.android.data.models.Pokemon
 
 class LocalStorageDataSource {
     suspend fun getPokemonList(): List<Pokemon> = emptyList()  // TODO: Implement

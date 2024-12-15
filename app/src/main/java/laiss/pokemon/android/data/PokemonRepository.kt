@@ -5,91 +5,71 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import laiss.pokemon.android.data.dataSources.LocalStorageDataSource
 import laiss.pokemon.android.data.dataSources.PokeApiDataSource
-import laiss.pokemon.android.data.dataSources.PokemonDto
+import laiss.pokemon.android.data.models.Pokemon
+import laiss.pokemon.android.data.models.toModel
 import kotlin.random.Random
 
-enum class PokemonType(val typeString: String) {
-    Normal("normal"),
-    Fire("fire"),
-    Fighting("fighting"),
-    Water("water"),
-    Flying("flying"),
-    Grass("grass"),
-    Poison("poison"),
-    Electric("electric"),
-    Ground("ground"),
-    Psychic("psychic"),
-    Rock("rock"),
-    Ice("ice"),
-    Bug("bug"),
-    Dragon("dragon"),
-    Ghost("ghost"),
-    Dark("dark"),
-    Steel("steel"),
-    Fairy("fairy"),
-    Stellar("stellar"),
-    Unknown("???");
-
-    companion object {
-        operator fun get(typeString: String) = entries.firstOrNull { it.typeString == typeString }
-    }
-}
-
-class Pokemon(
-    val id: Int,
-    val name: String,
-    val imageUrl: String?,
-    val height: Double,
-    val weight: Double,
-    val types: List<PokemonType>,
-    val attack: Int,
-    val defense: Int,
-    val hp: Int
-)
-
-fun PokemonDto.toModel() = Pokemon(
-    id = id,
-    name = name,
-    imageUrl = sprites.front_default,
-    height = height,
-    weight = weight,
-    types = types.map { PokemonType[it.type.name] ?: PokemonType.Unknown },
-    attack = stats.first { it.stat.name == "attack" }.base_stat,
-    defense = stats.first { it.stat.name == "defense" }.base_stat,
-    hp = stats.first { it.stat.name == "hp" }.base_stat
-)
-
 class PokemonRepository(
-    private val pokeApiDataSource: PokeApiDataSource,
-    private val localStorageDataSource: LocalStorageDataSource,
-    private val pageSize: Int
+    internal val pokeApiDataSource: PokeApiDataSource,
+    internal val localStorageDataSource: LocalStorageDataSource,
+    internal val pageSize: Int
 ) {
-    private var isOfflineMode: Boolean = false
+    private lateinit var strategy: IStrategy
+    private var isInitialized = false
 
-    /**
-     * In online mode it stores pages that can turn with null-blocks, following remote storage.
-     * In offline mode it is being initialised from [LocalStorageDataSource] without any empty space
-     * */
-    private val pokemonListCache = mutableListOf<Pokemon?>()
+    private suspend fun ensureIsInitialized() {
+        if (isInitialized) return
 
-    /**
-     * Always has items from [LocalStorageDataSource] if they were present at startup
-     * */
-    private val pokemonByNameCache = mutableMapOf<String, Pokemon>()
-
-    private val isInitialized
-        get() = pokemonListCache.isEmpty().not()
+        val locallyStoredPokemonList = localStorageDataSource.getPokemonList()
+        try {
+            val pokemonCount = pokeApiDataSource.getPokemonHeadersList(0, 1).count
+            strategy = OnlineStrategy(pokemonCount, locallyStoredPokemonList, this)
+        } catch (_: Exception) {
+            strategy = OfflineStrategy(locallyStoredPokemonList, this)
+        }
+    }
 
     suspend fun getPage(number: Int, pagingOffset: Int = 0): List<Pokemon> {
         ensureIsInitialized()
+        return strategy.getPage(number, pagingOffset)
+    }
 
-        val offset = pageSize * number + pagingOffset
-        val cached = pokemonListCache.asSequence().drop(offset).take(pageSize)
+    suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
+        ensureIsInitialized()
+        val pageNumber = Random.nextInt(0, strategy.pokemonCount / pageSize)
+        val pagingOffset = Random.nextInt(0, pageSize)
+        return pageNumber to pagingOffset
+    }
+
+    suspend fun getPokemonByName(pokemonName: String): Pokemon {
+        ensureIsInitialized()
+        return strategy.getPokemonByName(pokemonName)
+    }
+}
+
+private interface IStrategy {
+    suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon>
+    suspend fun getPokemonByName(pokemonName: String): Pokemon
+    val pokemonCount: Int
+}
+
+private class OnlineStrategy(
+    override val pokemonCount: Int,
+    locallyStoredPokemonList: List<Pokemon>,
+    private val repository: PokemonRepository
+) : IStrategy {
+    /**
+     * Copies remote structure, nulls for non-loaded items*/
+    private val pokemonListCache = mutableListOf<Pokemon?>()
+    private val pokemonByNameCache = locallyStoredPokemonList.associateBy { it.name }.toMutableMap()
+
+    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
+        val offset = repository.pageSize * number + pagingOffset
+        val cached = pokemonListCache.asSequence().drop(offset).take(repository.pageSize)
         if (cached.all { it != null }) return cached.map { it!! }.toList()
 
-        if(isOfflineMode) return emptyList()
-
-        val headerList = pokeApiDataSource.getPokemonHeadersList(offset, pageSize)
+        val headerList =
+            repository.pokeApiDataSource.getPokemonHeadersList(offset, repository.pageSize)
 
         val pokemonList = coroutineScope {
             headerList.results.map { async { getPokemonByName(it.name) } }.awaitAll()
@@ -98,38 +78,34 @@ class PokemonRepository(
         return pokemonList
     }
 
-    suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
-        ensureIsInitialized()
-        val pageNumber = Random.nextInt(0, pokemonListCache.size / pageSize)
-        val pagingOffset = Random.nextInt(0, pageSize)
-        return pageNumber to pagingOffset
-    }
-
-    suspend fun getPokemonByName(pokemonName: String): Pokemon {
-        ensureIsInitialized()
-
+    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
         val cachedPokemon = pokemonByNameCache[pokemonName]
         if (cachedPokemon != null) return cachedPokemon
 
-        if(isOfflineMode) throw IllegalArgumentException("No pokemon with such name")
-
-        val pokemon = pokeApiDataSource.getPokemon(pokemonName).toModel()
+        val pokemon = repository.pokeApiDataSource.getPokemon(pokemonName).toModel()
         pokemonByNameCache[pokemon.name] = pokemon
-        localStorageDataSource.storePokemon(pokemon)
+        repository.localStorageDataSource.storePokemon(pokemon)
         return pokemon
     }
+}
 
-    private suspend fun ensureIsInitialized() {
-        if (isInitialized) return
+private class OfflineStrategy(
+    locallyStoredPokemonList: List<Pokemon>,
+    private val repository: PokemonRepository
+) : IStrategy {
+    override val pokemonCount: Int
+        get() = pokemonList.size
+    private val pokemonList = locallyStoredPokemonList
+    private val pokemonByName = pokemonList.associateBy { it.name }
 
-        val locallyStoredPokemonList = localStorageDataSource.getPokemonList()
-        locallyStoredPokemonList.forEach { pokemonByNameCache[it.name] = it }
-        try {
-            val headerList = pokeApiDataSource.getPokemonHeadersList(0, 1)
-            pokemonListCache.addAll(List(headerList.count) { null })
-        } catch (_: Exception) {
-            isOfflineMode = true
-            pokemonListCache.addAll(locallyStoredPokemonList)
-        }
+    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
+        val offset = repository.pageSize * number + pagingOffset
+        val cropped = pokemonList.asSequence().drop(offset).take(repository.pageSize)
+        return cropped.toList()
+    }
+
+    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
+        return pokemonByName[pokemonName]
+            ?: throw IllegalArgumentException("No pokemon with such name")
     }
 }
