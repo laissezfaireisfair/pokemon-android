@@ -128,11 +128,11 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        StatEntry("Height", state.details.height)
-                        StatEntry("Weight", state.details.weight)
-                        StatEntry("Attack", state.details.attack)
-                        StatEntry("Defence", state.details.defence)
-                        StatEntry("HP", state.details.hp)
+                        StatEntry(name = "Height", value = state.details.heightCm, unit = "cm")
+                        StatEntry(name = "Weight", value = state.details.weightKg, unit = "kg")
+                        StatEntry(name = "Attack", value = state.details.attack)
+                        StatEntry(name = "Defence", value = state.details.defence)
+                        StatEntry(name = "HP", value = state.details.hp)
 
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -149,8 +149,12 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun StatEntry(name: String, value: String) = Row {
+fun StatEntry(name: String, value: String, unit: String? = null) = Row {
     Text(text = "$name:", color = Subtext1)
     Spacer(modifier = Modifier.width(8.dp))
     Text(text = value)
+    if (unit != null) {
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(text = unit, color = Subtext1)
+    }
 }

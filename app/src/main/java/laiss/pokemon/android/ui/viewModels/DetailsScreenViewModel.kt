@@ -13,8 +13,8 @@ import laiss.pokemon.android.utils.capitalize
 data class Details(
     val name: String,
     val imageUrl: String?,
-    val weight: String,
-    val height: String,
+    val weightKg: String,
+    val heightCm: String,
     val types: List<String>,
     val attack: String,
     val defence: String,
@@ -24,8 +24,8 @@ data class Details(
 fun Pokemon.toDetails() = Details(
     name = name.capitalize(),
     imageUrl = imageUrl,
-    weight = weight.toString(),
-    height = height.toString(),
+    weightKg = (weightHg / 10.0).toString(),
+    heightCm = (heightDm * 10).toString(),
     types = types.map { it.typeString },
     attack = attack.toString(),
     defence = defense.toString(),
@@ -41,8 +41,8 @@ data class DetailsScreenState(
                 details = Details(
                     name = "bulbasaur".capitalize(),
                     imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-                    weight = 69.0.toString(),
-                    height = 7.0.toString(),
+                    weightKg = 69.0.toString(),
+                    heightCm = 7.0.toString(),
                     types = listOf("grass", "poison"),
                     attack = 49.toString(),
                     defence = 49.toString(),

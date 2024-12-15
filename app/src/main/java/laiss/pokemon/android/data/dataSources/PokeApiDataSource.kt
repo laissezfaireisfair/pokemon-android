@@ -36,8 +36,8 @@ data class PokemonStatsDto(val base_stat: Int, val stat: PokemonStatDto)
 data class PokemonDto(
     val name: String,
     val id: Int,
-    val height: Double,
-    val weight: Double,
+    val height: Int,
+    val weight: Int,
     val sprites: PokemonSpritesDto,
     val types: List<PokemonTypesDto>,
     val stats: List<PokemonStatsDto>
