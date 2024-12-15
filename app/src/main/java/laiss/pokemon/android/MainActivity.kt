@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import laiss.pokemon.android.data.PokemonRepository
+import laiss.pokemon.android.data.dataSources.LocalStorageDataSource
 import laiss.pokemon.android.data.dataSources.PokeApiDataSource
 import laiss.pokemon.android.navigation.Screens
 import laiss.pokemon.android.ui.DetailsScreen
@@ -24,7 +25,8 @@ class MainActivity : ComponentActivity() {
 
         val httpClient = OkHttpClient()
         val pokeApiDataSource = PokeApiDataSource(httpClient)
-        val pokemonRepository = PokemonRepository(pokeApiDataSource, 30)
+        val localStorageDataSource = LocalStorageDataSource()
+        val pokemonRepository = PokemonRepository(pokeApiDataSource, localStorageDataSource, 30)
 
         enableEdgeToEdge()
         setContent {
