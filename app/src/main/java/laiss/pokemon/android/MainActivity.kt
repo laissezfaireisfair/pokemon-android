@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
         val httpClient = OkHttpClient()
         val pokeApiDataSource = PokeApiDataSource(httpClient)
-        val localStorageDataSource = LocalStorageDataSource()
+        val localStorageDataSource = LocalStorageDataSource(applicationContext)
         val pokemonRepository = PokemonRepository(pokeApiDataSource, localStorageDataSource, 30)
 
         enableEdgeToEdge()

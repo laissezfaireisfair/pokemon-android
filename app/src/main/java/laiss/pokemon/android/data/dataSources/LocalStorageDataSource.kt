@@ -1,9 +1,49 @@
 package laiss.pokemon.android.data.dataSources
 
-import laiss.pokemon.android.data.models.Pokemon
+import android.content.Context
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
-class LocalStorageDataSource {
-    suspend fun getPokemonList(): List<Pokemon> = emptyList()  // TODO: Implement
+@Entity(tableName = "pokemon")
+data class PokemonEntity(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val imageUrl: String?,
+    val height: Double,
+    val weight: Double,
+    val types: String,
+    val attack: Int,
+    val defense: Int,
+    val hp: Int
+)
 
-    suspend fun storePokemon(pokemon: Pokemon) {}  // TODO: Implement
+class LocalStorageDataSource(applicationContext: Context) {
+    private val localDatabase =
+        Room.databaseBuilder(applicationContext, LocalDatabase::class.java, "local-db").build()
+
+    suspend fun getPokemonList() = localDatabase.pokemonDao().loadAllPokemon()
+
+    suspend fun storePokemon(pokemon: PokemonEntity) =
+        localDatabase.pokemonDao().insertPokemon(pokemon)
+}
+
+@Dao
+internal interface PokemonDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPokemon(pokemon: PokemonEntity)
+
+    @Query("SELECT * from pokemon")
+    suspend fun loadAllPokemon(): List<PokemonEntity>
+}
+
+@Database(entities = [PokemonEntity::class], version = 1)
+internal abstract class LocalDatabase : RoomDatabase() {
+    abstract fun pokemonDao(): PokemonDao
 }

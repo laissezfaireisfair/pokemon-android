@@ -5,7 +5,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import laiss.pokemon.android.data.dataSources.LocalStorageDataSource
 import laiss.pokemon.android.data.dataSources.PokeApiDataSource
+import laiss.pokemon.android.data.dataSources.PokemonEntity
 import laiss.pokemon.android.data.models.Pokemon
+import laiss.pokemon.android.data.models.toEntity
 import laiss.pokemon.android.data.models.toModel
 import kotlin.random.Random
 
@@ -20,12 +22,12 @@ class PokemonRepository(
     private suspend fun ensureIsInitialized() {
         if (isInitialized) return
 
-        val locallyStoredPokemonList = localStorageDataSource.getPokemonList()
+        val pokemonEntities = localStorageDataSource.getPokemonList()
         try {
             val pokemonCount = pokeApiDataSource.getPokemonHeadersList(0, 1).count
-            strategy = OnlineStrategy(pokemonCount, locallyStoredPokemonList, this)
+            strategy = OnlineStrategy(pokemonCount, pokemonEntities, this)
         } catch (_: Exception) {
-            strategy = OfflineStrategy(locallyStoredPokemonList, this)
+            strategy = OfflineStrategy(pokemonEntities, this)
         }
     }
 
@@ -55,13 +57,14 @@ private interface IStrategy {
 
 private class OnlineStrategy(
     override val pokemonCount: Int,
-    locallyStoredPokemonList: List<Pokemon>,
+    pokemonEntities: List<PokemonEntity>,
     private val repository: PokemonRepository
 ) : IStrategy {
     /**
      * Copies remote structure, nulls for non-loaded items*/
-    private val pokemonListCache = mutableListOf<Pokemon?>()
-    private val pokemonByNameCache = locallyStoredPokemonList.associateBy { it.name }.toMutableMap()
+    private val pokemonListCache = MutableList<Pokemon?>(pokemonCount) { null }
+    private val pokemonByNameCache =
+        pokemonEntities.map { it.toModel() }.associateBy { it.name }.toMutableMap()
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
@@ -84,18 +87,18 @@ private class OnlineStrategy(
 
         val pokemon = repository.pokeApiDataSource.getPokemon(pokemonName).toModel()
         pokemonByNameCache[pokemon.name] = pokemon
-        repository.localStorageDataSource.storePokemon(pokemon)
+        repository.localStorageDataSource.storePokemon(pokemon.toEntity())
         return pokemon
     }
 }
 
 private class OfflineStrategy(
-    locallyStoredPokemonList: List<Pokemon>,
+    pokemonEntities: List<PokemonEntity>,
     private val repository: PokemonRepository
 ) : IStrategy {
     override val pokemonCount: Int
         get() = pokemonList.size
-    private val pokemonList = locallyStoredPokemonList
+    private val pokemonList = pokemonEntities.map { it.toModel() }
     private val pokemonByName = pokemonList.associateBy { it.name }
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
