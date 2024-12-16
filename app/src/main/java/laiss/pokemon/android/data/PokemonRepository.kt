@@ -70,8 +70,13 @@ private class OnlineStrategy(
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
-        val cached = pokemonListCache.listIterator(offset).asSequence().take(repository.pageSize)
-        if (cached.all { it != null }) return cached.map { it!! }.toList()
+        if (pokemonCount <= offset) return emptyList()
+
+        val indices = (offset..<(offset + repository.pageSize))
+        if (indices.all { pokemonListCache[it] != null })
+            return pokemonListCache.listIterator(offset).asSequence()
+                .take(repository.pageSize)
+                .map { it!! }.toList()
 
         val headerList =
             repository.pokeApiDataSource.getPokemonHeadersList(offset, repository.pageSize)
@@ -105,8 +110,9 @@ private class OfflineStrategy(
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
-        val cropped = pokemonList.subList(offset, offset + repository.pageSize)
-        return cropped
+        if (pokemonCount <= offset) return emptyList()
+        return pokemonList.listIterator(offset).asSequence()
+            .take(offset + repository.pageSize).toList()
     }
 
     override suspend fun getPokemonByName(pokemonName: String) = pokemonByName[pokemonName]
