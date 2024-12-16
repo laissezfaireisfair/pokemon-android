@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -23,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,12 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.distinctUntilChanged
+import laiss.pokemon.android.R
 import laiss.pokemon.android.navigation.navigateToDetails
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext0
@@ -90,15 +91,24 @@ fun OverviewScreenBody(
     onDefenseSortCheckedChange: (Boolean) -> Unit = {},
     onHpSortCheckedChange: (Boolean) -> Unit = {}
 ) {
-    Scaffold(topBar = {
-        TopAppBar(title = { Text(text = "Overview") }, navigationIcon = {
-            IconButton(onReloadClick) {
+    Scaffold(topBar = { TopAppBar(title = { Text(text = "Overview") }) }, floatingActionButton = {
+        with(MaterialTheme.colorScheme) {
+            IconButton(
+                modifier = Modifier.size(52.dp),
+                onClick = onReloadClick,
+                colors = IconButtonColors(
+                    containerColor = primary,
+                    contentColor = onPrimary,
+                    disabledContentColor = secondaryContainer,
+                    disabledContainerColor = onSecondaryContainer
+                ),
+            ) {
                 Icon(
-                    Icons.Default.Refresh,
+                    painter = painterResource(R.drawable.dices),
                     contentDescription = "Reload from random place"
                 )
             }
-        })
+        }
     }) { innerPadding ->
         when {
             state.isLoading && state.entries.isEmpty() -> Column(
