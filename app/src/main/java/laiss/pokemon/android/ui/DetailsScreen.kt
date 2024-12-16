@@ -29,11 +29,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import laiss.pokemon.android.R
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext0
 import laiss.pokemon.android.ui.theme.Subtext1
@@ -118,7 +120,7 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
                         )
 
                         HorizontalDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
                             text = state.details.name,
@@ -128,12 +130,19 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        StatEntry(name = "Height", value = state.details.heightCm, unit = "cm")
-                        StatEntry(name = "Weight", value = state.details.weightKg, unit = "kg")
-                        StatEntry(name = "Attack", value = state.details.attack)
-                        StatEntry(name = "Defence", value = state.details.defence)
-                        StatEntry(name = "HP", value = state.details.hp)
-
+                        StatEntry(
+                            iconId = R.drawable.height,
+                            value = state.details.heightCm,
+                            unit = "cm"
+                        )
+                        StatEntry(
+                            iconId = R.drawable.weight,
+                            value = state.details.weightKg,
+                            unit = "kg"
+                        )
+                        StatEntry(iconId = R.drawable.attack, value = state.details.attack)
+                        StatEntry(iconId = R.drawable.defense, value = state.details.defence)
+                        StatEntry(iconId = R.drawable.hp, value = state.details.hp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -149,12 +158,17 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun StatEntry(name: String, value: String, unit: String? = null) = Row {
-    Text(text = "$name:", color = Subtext1)
-    Spacer(modifier = Modifier.width(8.dp))
-    Text(text = value)
-    if (unit != null) {
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(text = unit, color = Subtext1)
+fun StatEntry(iconId: Int, value: String, unit: String? = null) =
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            modifier = Modifier.size(17.dp),
+            painter = painterResource(iconId),
+            contentDescription = "Stat $iconId icon"
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = value)
+        if (unit != null) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(text = unit, color = Subtext1)
+        }
     }
-}
