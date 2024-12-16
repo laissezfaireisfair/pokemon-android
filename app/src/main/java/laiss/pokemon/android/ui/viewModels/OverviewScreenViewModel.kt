@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import laiss.pokemon.android.data.models.Pokemon
 import laiss.pokemon.android.data.PokemonRepository
+import laiss.pokemon.android.data.models.Pokemon
 import laiss.pokemon.android.utils.capitalize
 
 data class OverviewScreenEntry(
@@ -129,6 +129,7 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
 
     fun loadNextPage() {
         if (uiState.value.isEndReached) return
+        if (uiState.value.isLoading) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -136,12 +137,16 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
                 val newEntries =
                     pokemonRepository.getPage(uiState.value.page + 1, uiState.value.pagingOffset)
                         .map { it.toEntry() }
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         entries = it.entries + newEntries,
                         isEndReached = newEntries.isEmpty(),
-                        page = it.page + 1
+                        page = it.page + 1,
+                        isAttackSortRequested = false,
+                        isDefenseSortRequested = false,
+                        isHpSortRequested = false
                     )
                 }
             } catch (exception: Exception) {
@@ -152,22 +157,40 @@ class OverviewScreenViewModel(private val pokemonRepository: PokemonRepository) 
 
     fun changeSortByAttackStatus(newStatus: Boolean) {
         _uiState.update { it.copy(isAttackSortRequested = newStatus) }
-        viewModelScope.launch {
-            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.attack }) }
+        try {
+            viewModelScope.launch {
+                _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.attack }) }
+            }
+        } catch (exception: Exception) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
+        } catch (exception: Error) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
         }
     }
 
     fun changeSortByDefenseStatus(newStatus: Boolean) {
         _uiState.update { it.copy(isDefenseSortRequested = newStatus) }
-        viewModelScope.launch {
-            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.defense }) }
+        try {
+            viewModelScope.launch {
+                _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.defense }) }
+            }
+        } catch (exception: Exception) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
+        } catch (exception: Error) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
         }
     }
 
     fun changeSortByHpStatus(newStatus: Boolean) {
         _uiState.update { it.copy(isHpSortRequested = newStatus) }
-        viewModelScope.launch {
-            _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.hp }) }
+        try {
+            viewModelScope.launch {
+                _uiState.update { state -> state.copy(entries = state.entries.sortedByDescending { it.hp }) }
+            }
+        } catch (exception: Exception) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
+        } catch (exception: Error) {
+            _uiState.update { OverviewScreenState(error = exception.message) }
         }
     }
 }

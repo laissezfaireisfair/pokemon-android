@@ -137,23 +137,26 @@ fun OverviewScreenBody(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item() {
+                    item {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Checkbox(
                                     checked = state.isAttackSortRequested,
+                                    enabled = state.isLoading.not(),
                                     onCheckedChange = onAttackSortCheckedChange
                                 )
                                 Text("Attack")
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Checkbox(
                                     checked = state.isDefenseSortRequested,
+                                    enabled = state.isLoading.not(),
                                     onCheckedChange = onDefenseSortCheckedChange
                                 )
                                 Text("Defense")
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Checkbox(
                                     checked = state.isHpSortRequested,
+                                    enabled = state.isLoading.not(),
                                     onCheckedChange = onHpSortCheckedChange
                                 )
                                 Text("Hp")
