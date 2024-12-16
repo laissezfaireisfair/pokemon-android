@@ -29,6 +29,8 @@ class PokemonRepository(
         } catch (_: Exception) {
             strategy = OfflineStrategy(pokemonEntities, this)
         }
+
+        isInitialized = true
     }
 
     suspend fun getPage(number: Int, pagingOffset: Int = 0): List<Pokemon> {
@@ -68,7 +70,7 @@ private class OnlineStrategy(
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
-        val cached = pokemonListCache.asSequence().drop(offset).take(repository.pageSize)
+        val cached = pokemonListCache.listIterator(offset).asSequence().take(repository.pageSize)
         if (cached.all { it != null }) return cached.map { it!! }.toList()
 
         val headerList =
@@ -103,12 +105,10 @@ private class OfflineStrategy(
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
-        val cropped = pokemonList.asSequence().drop(offset).take(repository.pageSize)
-        return cropped.toList()
+        val cropped = pokemonList.subList(offset, offset + repository.pageSize)
+        return cropped
     }
 
-    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
-        return pokemonByName[pokemonName]
-            ?: throw IllegalArgumentException("No pokemon with such name")
-    }
+    override suspend fun getPokemonByName(pokemonName: String) = pokemonByName[pokemonName]
+        ?: throw IllegalArgumentException("No pokemon with such name")
 }
