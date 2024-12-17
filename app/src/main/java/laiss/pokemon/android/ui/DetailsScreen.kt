@@ -45,24 +45,6 @@ import laiss.pokemon.android.ui.viewModels.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 
 @Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewOk, onBackClick = {})
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewLoading, onBackClick = {})
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewError() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewError, onBackClick = {})
-}
-
-@Composable
 fun DetailsScreen(navHostController: NavHostController, viewModel: DetailsScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
     DetailsScreenBody(state = state, onBackClick = { navHostController.navigateUp() })
@@ -161,7 +143,7 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun StatEntry(iconId: Int, value: String, unit: String? = null) =
+private fun StatEntry(iconId: Int, value: String, unit: String? = null) =
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             modifier = Modifier.size(17.dp),
@@ -175,3 +157,22 @@ fun StatEntry(iconId: Int, value: String, unit: String? = null) =
             Text(text = unit, color = Subtext1)
         }
     }
+
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewOk, onBackClick = {})
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewLoading, onBackClick = {})
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewError() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewError, onBackClick = {})
+}

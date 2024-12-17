@@ -49,24 +49,6 @@ import laiss.pokemon.android.ui.viewModels.OverviewScreenState
 import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
 
 @Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewOk)
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewLoading)
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun OverviewScreenPreviewError() = PokemonAndroidTheme {
-    OverviewScreenBody(state = OverviewScreenState.previewError)
-}
-
-@Composable
 fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
     OverviewScreenBody(
@@ -221,4 +203,23 @@ fun RegisterListEndCallback(
         snapshotFlow { isListEndReached.value }.distinctUntilChanged()
             .collect { onListEndReached() }
     }
+}
+
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun OverviewScreenPreviewOk() = PokemonAndroidTheme {
+    OverviewScreenBody(state = OverviewScreenState.previewOk)
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun OverviewScreenPreviewLoading() = PokemonAndroidTheme {
+    OverviewScreenBody(state = OverviewScreenState.previewLoading)
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun OverviewScreenPreviewError() = PokemonAndroidTheme {
+    OverviewScreenBody(state = OverviewScreenState.previewError)
 }
