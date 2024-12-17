@@ -1,5 +1,6 @@
 package laiss.pokemon.android.data.dataSources
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -9,7 +10,7 @@ data class PokemonHeaderDto(val name: String)
 data class PokemonHeadersListDto(val count: Int, val results: List<PokemonHeaderDto>)
 
 @Serializable
-data class PokemonSpritesDto(val front_default: String?)
+data class PokemonSpritesDto(@SerialName("front_default") val frontDefault: String?)
 
 @Serializable
 data class PokemonTypeDto(val name: String)
@@ -21,7 +22,7 @@ data class PokemonTypesDto(val type: PokemonTypeDto)
 data class PokemonStatDto(val name: String)
 
 @Serializable
-data class PokemonStatsDto(val base_stat: Int, val stat: PokemonStatDto)
+data class PokemonStatsDto(@SerialName("front_default") val baseStat: Int, val stat: PokemonStatDto)
 
 @Serializable
 data class PokemonDto(
