@@ -11,11 +11,19 @@ import laiss.pokemon.android.data.models.toEntity
 import laiss.pokemon.android.data.models.toModel
 import kotlin.random.Random
 
+interface IPokemonRepository {
+    suspend fun getPage(number: Int, pagingOffset: Int = 0): List<Pokemon>
+
+    suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int>
+
+    suspend fun getPokemonByName(pokemonName: String): Pokemon
+}
+
 class PokemonRepository(
     internal val pokeApiDataSource: PokeApiDataSource,
     internal val localStorageDataSource: LocalStorageDataSource,
     internal val pageSize: Int
-) {
+) : IPokemonRepository {
     private lateinit var strategy: IStrategy
     private var isInitialized = false
 
@@ -33,19 +41,19 @@ class PokemonRepository(
         isInitialized = true
     }
 
-    suspend fun getPage(number: Int, pagingOffset: Int = 0): List<Pokemon> {
+    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         ensureIsInitialized()
         return strategy.getPage(number, pagingOffset)
     }
 
-    suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
+    override suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
         ensureIsInitialized()
         val pageNumber = Random.nextInt(0, strategy.pokemonCount / pageSize)
         val pagingOffset = Random.nextInt(0, pageSize)
         return pageNumber to pagingOffset
     }
 
-    suspend fun getPokemonByName(pokemonName: String): Pokemon {
+    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
         ensureIsInitialized()
         return strategy.getPokemonByName(pokemonName)
     }

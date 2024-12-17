@@ -6,13 +6,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import laiss.pokemon.android.data.PokemonRepository
+import laiss.pokemon.android.data.IPokemonRepository
 import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.states.toDetails
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class DetailsScreenViewModel(
-    private val pokemonRepository: PokemonRepository, pokemonName: String
-) : ViewModel() {
+class DetailsScreenViewModel(pokemonName: String) : ViewModel(), KoinComponent {
+    private val pokemonRepository: IPokemonRepository by inject()
+
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 
