@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -38,8 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import laiss.pokemon.android.R
+import laiss.pokemon.android.ui.states.Details
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
-import laiss.pokemon.android.ui.theme.Subtext0
 import laiss.pokemon.android.ui.theme.Subtext1
 import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
@@ -70,72 +69,62 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit = {}) {
             verticalArrangement = Arrangement.Center
         ) {
             when {
-                state.isLoading -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) { CircularProgressIndicator() }
+                state.isLoading -> LoadingComposable()
 
-                state.error != null || state.details == null -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Something went wrong", color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (state.error != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = state.error, fontSize = 10.sp, color = Subtext0)
-                    }
-                }
+                state.error != null || state.details == null -> ErrorComposable(state.error)
 
-                else -> ElevatedCard {
-                    Column(
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth()
-                    ) {
-                        AsyncImage(
-                            modifier = Modifier
-                                .size(150.dp)
-                                .align(Alignment.CenterHorizontally),
-                            model = state.details.imageUrl,
-                            contentScale = ContentScale.FillBounds,
-                            contentDescription = "Front image"
-                        )
+                else -> OkStateComposable(state.details)
+            }
+        }
+    }
+}
 
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(4.dp))
+@Composable
+private fun OkStateComposable(details: Details) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(150.dp)
+                    .align(Alignment.CenterHorizontally),
+                model = details.imageUrl,
+                contentScale = ContentScale.FillBounds,
+                contentDescription = "Front image"
+            )
 
-                        Text(
-                            text = state.details.name,
-                            fontSize = 25.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(4.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = details.name,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-                        StatEntry(
-                            iconId = R.drawable.height,
-                            value = state.details.heightCm,
-                            unit = "cm"
-                        )
-                        StatEntry(
-                            iconId = R.drawable.weight,
-                            value = state.details.weightKg,
-                            unit = "kg"
-                        )
-                        StatEntry(iconId = R.drawable.attack, value = state.details.attack)
-                        StatEntry(iconId = R.drawable.defense, value = state.details.defence)
-                        StatEntry(iconId = R.drawable.hp, value = state.details.hp)
-                        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            items(state.details.types) {
-                                Text(text = it, color = MaterialTheme.colorScheme.tertiary)
-                            }
-                        }
-                    }
+            StatEntry(
+                iconId = R.drawable.height,
+                value = details.heightCm,
+                unit = "cm"
+            )
+            StatEntry(
+                iconId = R.drawable.weight,
+                value = details.weightKg,
+                unit = "kg"
+            )
+            StatEntry(iconId = R.drawable.attack, value = details.attack)
+            StatEntry(iconId = R.drawable.defense, value = details.defence)
+            StatEntry(iconId = R.drawable.hp, value = details.hp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(details.types) {
+                    Text(text = it, color = MaterialTheme.colorScheme.tertiary)
                 }
             }
         }
