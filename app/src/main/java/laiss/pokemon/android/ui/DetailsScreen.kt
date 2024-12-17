@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,9 +39,9 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import laiss.pokemon.android.R
 import laiss.pokemon.android.ui.states.Details
+import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext1
-import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 
 @Composable
@@ -108,18 +109,32 @@ private fun OkStateComposable(details: Details) {
             Spacer(modifier = Modifier.height(4.dp))
 
             StatEntry(
-                iconId = R.drawable.height,
                 value = details.heightCm,
-                unit = "cm"
+                name = "Height",
+                unit = "cm",
+                painter = painterResource(R.drawable.height)
             )
             StatEntry(
-                iconId = R.drawable.weight,
                 value = details.weightKg,
-                unit = "kg"
+                name = "Weight",
+                unit = "kg",
+                painter = painterResource(R.drawable.weight)
             )
-            StatEntry(iconId = R.drawable.attack, value = details.attack)
-            StatEntry(iconId = R.drawable.defense, value = details.defence)
-            StatEntry(iconId = R.drawable.hp, value = details.hp)
+            StatEntry(
+                value = details.attack,
+                name = "Attack",
+                painter = painterResource(R.drawable.attack)
+            )
+            StatEntry(
+                value = details.defence,
+                name = "Defence",
+                painter = painterResource(R.drawable.defense)
+            )
+            StatEntry(
+                value = details.hp,
+                name = "HP",
+                painter = painterResource(R.drawable.hp)
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -132,12 +147,12 @@ private fun OkStateComposable(details: Details) {
 }
 
 @Composable
-private fun StatEntry(iconId: Int, value: String, unit: String? = null) =
+private fun StatEntry(painter: Painter, name: String, value: String, unit: String? = null) =
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             modifier = Modifier.size(17.dp),
-            painter = painterResource(iconId),
-            contentDescription = "Stat $iconId icon"
+            painter = painter,
+            contentDescription = "$name icon"
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = value)
