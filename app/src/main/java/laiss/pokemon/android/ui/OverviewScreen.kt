@@ -54,11 +54,11 @@ fun OverviewScreen(navHostController: NavHostController, viewModel: OverviewScre
     OverviewScreenBody(
         state = state,
         onPokemonClick = { navHostController.navigateToDetails(it.lowercase()) },
-        onReloadClick = { viewModel.reloadFromRandomPage() },
-        onListEndReached = { viewModel.loadNextPage() },
-        onAttackSortCheckedChange = { viewModel.changeSortByAttackStatus(it) },
-        onDefenseSortCheckedChange = { viewModel.changeSortByDefenseStatus(it) },
-        onHpSortCheckedChange = { viewModel.changeSortByHpStatus(it) }
+        onReloadClick = viewModel::reloadFromRandomPage,
+        onListEndReached = viewModel::loadNextPage,
+        onAttackSortCheckedChange = viewModel::changeSortByAttackStatus,
+        onDefenseSortCheckedChange = viewModel::changeSortByDefenseStatus,
+        onHpSortCheckedChange = viewModel::changeSortByHpStatus
     )
 }
 

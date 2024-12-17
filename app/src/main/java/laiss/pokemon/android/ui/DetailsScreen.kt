@@ -47,12 +47,12 @@ import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 @Composable
 fun DetailsScreen(navHostController: NavHostController, viewModel: DetailsScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
-    DetailsScreenBody(state = state, onBackClick = { navHostController.navigateUp() })
+    DetailsScreenBody(state = state, onBackClick = navHostController::navigateUp)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
+fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit = {}) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "Details") }, navigationIcon = {
             IconButton(onClick = onBackClick) {
@@ -162,17 +162,17 @@ private fun StatEntry(iconId: Int, value: String, unit: String? = null) =
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 private fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewOk, onBackClick = {})
+    DetailsScreenBody(state = DetailsScreenState.previewOk)
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 private fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewLoading, onBackClick = {})
+    DetailsScreenBody(state = DetailsScreenState.previewLoading)
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xff24273a)
 private fun DetailsScreenPreviewError() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewError, onBackClick = {})
+    DetailsScreenBody(state = DetailsScreenState.previewError)
 }
