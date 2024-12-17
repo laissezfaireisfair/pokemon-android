@@ -45,13 +45,13 @@ class Pokemon(
 fun PokemonDto.toModel() = Pokemon(
     id = id,
     name = name,
-    imageUrl = sprites.front_default,
+    imageUrl = sprites.frontDefault,
     heightDm = height,
     weightHg = weight,
     types = types.map { PokemonType[it.type.name] ?: PokemonType.Unknown },
-    attack = stats.first { it.stat.name == "attack" }.base_stat,
-    defense = stats.first { it.stat.name == "defense" }.base_stat,
-    hp = stats.first { it.stat.name == "hp" }.base_stat
+    attack = stats.first { it.stat.name == "attack" }.baseStat,
+    defense = stats.first { it.stat.name == "defense" }.baseStat,
+    hp = stats.first { it.stat.name == "hp" }.baseStat
 )
 
 fun PokemonEntity.toModel() = Pokemon(

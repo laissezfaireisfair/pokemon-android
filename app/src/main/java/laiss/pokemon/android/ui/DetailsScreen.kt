@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,39 +38,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import laiss.pokemon.android.R
+import laiss.pokemon.android.ui.states.Details
+import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
-import laiss.pokemon.android.ui.theme.Subtext0
 import laiss.pokemon.android.ui.theme.Subtext1
-import laiss.pokemon.android.ui.viewModels.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewOk, onBackClick = {})
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewLoading, onBackClick = {})
-}
-
-@Composable
-@Preview(showBackground = true, backgroundColor = 0xff24273a)
-fun DetailsScreenPreviewError() = PokemonAndroidTheme {
-    DetailsScreenBody(state = DetailsScreenState.previewError, onBackClick = {})
-}
 
 @Composable
 fun DetailsScreen(navHostController: NavHostController, viewModel: DetailsScreenViewModel) {
     val state = viewModel.uiState.collectAsState().value
-    DetailsScreenBody(state = state, onBackClick = { navHostController.navigateUp() })
+    DetailsScreenBody(state = state, onBackClick = navHostController::navigateUp)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
+fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit = {}) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "Details") }, navigationIcon = {
             IconButton(onClick = onBackClick) {
@@ -88,72 +70,76 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             when {
-                state.isLoading -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) { CircularProgressIndicator() }
+                state.isLoading -> LoadingComposable()
 
-                state.error != null || state.details == null -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Something went wrong", color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (state.error != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = state.error, fontSize = 10.sp, color = Subtext0)
-                    }
-                }
+                state.error != null || state.details == null -> ErrorComposable(state.error)
 
-                else -> ElevatedCard {
-                    Column(
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth()
-                    ) {
-                        AsyncImage(
-                            modifier = Modifier
-                                .size(150.dp)
-                                .align(Alignment.CenterHorizontally),
-                            model = state.details.imageUrl,
-                            contentScale = ContentScale.FillBounds,
-                            contentDescription = "Front image"
-                        )
+                else -> OkStateComposable(state.details)
+            }
+        }
+    }
+}
 
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(4.dp))
+@Composable
+private fun OkStateComposable(details: Details) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(150.dp)
+                    .align(Alignment.CenterHorizontally),
+                model = details.imageUrl,
+                contentScale = ContentScale.FillBounds,
+                contentDescription = "Front image"
+            )
 
-                        Text(
-                            text = state.details.name,
-                            fontSize = 25.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(4.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = details.name,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-                        StatEntry(
-                            iconId = R.drawable.height,
-                            value = state.details.heightCm,
-                            unit = "cm"
-                        )
-                        StatEntry(
-                            iconId = R.drawable.weight,
-                            value = state.details.weightKg,
-                            unit = "kg"
-                        )
-                        StatEntry(iconId = R.drawable.attack, value = state.details.attack)
-                        StatEntry(iconId = R.drawable.defense, value = state.details.defence)
-                        StatEntry(iconId = R.drawable.hp, value = state.details.hp)
-                        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            items(state.details.types) {
-                                Text(text = it, color = MaterialTheme.colorScheme.tertiary)
-                            }
-                        }
-                    }
+            StatEntry(
+                value = details.heightCm,
+                name = "Height",
+                unit = "cm",
+                painter = painterResource(R.drawable.height)
+            )
+            StatEntry(
+                value = details.weightKg,
+                name = "Weight",
+                unit = "kg",
+                painter = painterResource(R.drawable.weight)
+            )
+            StatEntry(
+                value = details.attack,
+                name = "Attack",
+                painter = painterResource(R.drawable.attack)
+            )
+            StatEntry(
+                value = details.defence,
+                name = "Defence",
+                painter = painterResource(R.drawable.defense)
+            )
+            StatEntry(
+                value = details.hp,
+                name = "HP",
+                painter = painterResource(R.drawable.hp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(details.types) {
+                    Text(text = it, color = MaterialTheme.colorScheme.tertiary)
                 }
             }
         }
@@ -161,12 +147,12 @@ fun DetailsScreenBody(state: DetailsScreenState, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun StatEntry(iconId: Int, value: String, unit: String? = null) =
+private fun StatEntry(painter: Painter, name: String, value: String, unit: String? = null) =
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             modifier = Modifier.size(17.dp),
-            painter = painterResource(iconId),
-            contentDescription = "Stat $iconId icon"
+            painter = painter,
+            contentDescription = "$name icon"
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = value)
@@ -175,3 +161,22 @@ fun StatEntry(iconId: Int, value: String, unit: String? = null) =
             Text(text = unit, color = Subtext1)
         }
     }
+
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewOk() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewOk)
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewLoading() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewLoading)
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xff24273a)
+private fun DetailsScreenPreviewError() = PokemonAndroidTheme {
+    DetailsScreenBody(state = DetailsScreenState.previewError)
+}

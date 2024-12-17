@@ -4,44 +4,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
-
-@Serializable
-data class PokemonHeaderDto(val name: String)
-
-@Serializable
-data class PokemonHeadersListDto(val count: Int, val results: List<PokemonHeaderDto>)
-
-@Serializable
-data class PokemonSpritesDto(val front_default: String?)
-
-@Serializable
-data class PokemonTypeDto(val name: String)
-
-@Serializable
-data class PokemonTypesDto(val type: PokemonTypeDto)
-
-@Serializable
-data class PokemonStatDto(val name: String)
-
-@Serializable
-data class PokemonStatsDto(val base_stat: Int, val stat: PokemonStatDto)
-
-@Serializable
-data class PokemonDto(
-    val name: String,
-    val id: Int,
-    val height: Int,
-    val weight: Int,
-    val sprites: PokemonSpritesDto,
-    val types: List<PokemonTypesDto>,
-    val stats: List<PokemonStatsDto>
-)
 
 class PokeApiDataSource(private val client: OkHttpClient) {
     private val baseUrl = "https://pokeapi.co/api/v2"
