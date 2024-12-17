@@ -22,7 +22,7 @@ data class PokemonTypesDto(val type: PokemonTypeDto)
 data class PokemonStatDto(val name: String)
 
 @Serializable
-data class PokemonStatsDto(@SerialName("front_default") val baseStat: Int, val stat: PokemonStatDto)
+data class PokemonStatsDto(@SerialName("base_stat") val baseStat: Int, val stat: PokemonStatDto)
 
 @Serializable
 data class PokemonDto(
