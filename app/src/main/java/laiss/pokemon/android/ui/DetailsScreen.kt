@@ -41,7 +41,7 @@ import laiss.pokemon.android.R
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.theme.Subtext0
 import laiss.pokemon.android.ui.theme.Subtext1
-import laiss.pokemon.android.ui.viewModels.DetailsScreenState
+import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 
 @Composable
