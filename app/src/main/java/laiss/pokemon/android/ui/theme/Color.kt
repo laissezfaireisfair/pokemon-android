@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package laiss.pokemon.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
