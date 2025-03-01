@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    kotlin("plugin.serialization") version "2.0.0"
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId = "laiss.pokemon.android"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 3
         versionName = "1.0.4"
 
@@ -47,7 +47,7 @@ android {
 
 dependencies {
 
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
