@@ -1,22 +1,21 @@
 package laiss.pokemon.android.data.dataSources
 
 import android.util.Patterns
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import kotlin.coroutines.CoroutineContext
 
 private const val POKEMON_REQUEST_LIMIT = 100
 
-class PokeApiDataSource(private val client: OkHttpClient) {
+class PokeApiDataSource(
+    private val client: OkHttpClient,
+    private val ioDispatcher: CoroutineContext
+) {
     private val baseUrl = "https://pokeapi.co/api/v2"
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(Dispatchers.IO + job)
 
     suspend fun getPokemonHeadersList(offset: Int, count: Int) = run {
         require(0 <= offset) { "Offset: $offset should be non-negative" }
@@ -32,24 +31,25 @@ class PokeApiDataSource(private val client: OkHttpClient) {
     suspend fun getPokemon(name: String) =
         preformGetRequest<PokemonDto>("$baseUrl/pokemon/$name/")
 
-    private suspend inline fun <reified T> preformGetRequest(url: String) = scope.async {
-        require(Patterns.WEB_URL.matcher(url).matches()) { "Invalid url: $url" }
+    private suspend inline fun <reified T> preformGetRequest(url: String) =
+        withContext(ioDispatcher) {
+            require(Patterns.WEB_URL.matcher(url).matches()) { "Invalid url: $url" }
 
-        val request = Request.Builder().url(url).build()
-        client.newCall(request).execute().use { response ->
-            if (response.isSuccessful.not()) throw IOException("Request failed: $response")
-            response.body?.string()
-        }?.let {
-            try {
-                val json = Json { ignoreUnknownKeys = true }
-                json.decodeFromString<T>(it)
-            } catch (exception: SerializationException) {
-                throw IOException("Bad JSON received $exception")
-            } catch (exception: IllegalArgumentException) {
-                throw IOException("Bad type of received body: $exception}")
-            } catch (exception: Exception) {
-                throw IOException("Failed to deserialize: $exception")
-            }
-        } ?: throw IOException("Empty body received")
-    }.await()
+            val request = Request.Builder().url(url).build()
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful.not()) throw IOException("Request failed: $response")
+                response.body?.string()
+            }?.let {
+                try {
+                    val json = Json { ignoreUnknownKeys = true }
+                    json.decodeFromString<T>(it)
+                } catch (exception: SerializationException) {
+                    throw IOException("Bad JSON received $exception")
+                } catch (exception: IllegalArgumentException) {
+                    throw IOException("Bad type of received body: $exception}")
+                } catch (exception: Exception) {
+                    throw IOException("Failed to deserialize: $exception")
+                }
+            } ?: throw IOException("Empty body received")
+        }
 }

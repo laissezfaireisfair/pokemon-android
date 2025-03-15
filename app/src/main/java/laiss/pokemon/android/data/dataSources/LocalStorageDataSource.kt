@@ -10,6 +10,8 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 @Entity(tableName = "pokemon")
 data class PokemonEntity(
@@ -24,15 +26,21 @@ data class PokemonEntity(
     val hp: Int
 )
 
-class LocalStorageDataSource(applicationContext: Context) {
+class LocalStorageDataSource(
+    applicationContext: Context,
+    private val ioDispatcher: CoroutineContext
+) {
     private val localDatabase = Room
         .databaseBuilder(applicationContext, LocalDatabase::class.java, "local-db")
         .build()
 
-    suspend fun getPokemonList() = localDatabase.pokemonDao().loadAllPokemon()
+    suspend fun getPokemonList() = withContext(ioDispatcher) {
+        localDatabase.pokemonDao().loadAllPokemon()
+    }
 
-    suspend fun storePokemon(pokemon: PokemonEntity) =
+    suspend fun storePokemon(pokemon: PokemonEntity) = withContext(ioDispatcher) {
         localDatabase.pokemonDao().insertPokemon(pokemon)
+    }
 }
 
 @Dao
