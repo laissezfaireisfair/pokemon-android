@@ -11,7 +11,7 @@ import org.koin.core.component.KoinComponent
 class DetailsScreenViewModel(
     pokemonName: String,
     pokemonRepository: IPokemonRepository
-) : RichViewModel(), KoinComponent {
+) : RichViewModel() {
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 

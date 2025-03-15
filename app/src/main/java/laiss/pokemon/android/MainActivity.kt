@@ -32,9 +32,11 @@ class MainActivity : ComponentActivity() {
                         OverviewScreen(navHostController = navHostController,
                             viewModel = viewModel { OverviewScreenViewModel(get()) })
                     }
-                    composable("${Screens.Details.route}/{pokemonName}") { navBackStackEntry ->
-                        val pokemonName = navBackStackEntry.arguments?.getString("pokemonName")
-                            ?: throw IllegalArgumentException("Pokemon name expected when navigating to details")
+                    composable("${Screens.Details.route}/{pokemonName}") { navEntry ->
+                        val pokemonName = navEntry.arguments?.getString("pokemonName")
+                        requireNotNull(pokemonName) {
+                            "Pokemon name expected when navigating to details"
+                        }
 
                         DetailsScreen(navHostController = navHostController, viewModel = viewModel {
                             DetailsScreenViewModel(pokemonName, get())

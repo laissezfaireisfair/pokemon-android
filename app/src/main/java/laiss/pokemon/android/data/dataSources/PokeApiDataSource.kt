@@ -1,5 +1,6 @@
 package laiss.pokemon.android.data.dataSources
 
+import android.util.Patterns
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -10,18 +11,30 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 
+private const val POKEMON_REQUEST_LIMIT = 100
+
 class PokeApiDataSource(private val client: OkHttpClient) {
     private val baseUrl = "https://pokeapi.co/api/v2"
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
-    suspend fun getPokemonHeadersList(offset: Int, count: Int) =
-        preformGetRequest<PokemonHeadersListDto>("$baseUrl/pokemon/?limit=$count&offset=$offset")
+    suspend fun getPokemonHeadersList(offset: Int, count: Int) = run {
+        require(0 <= offset) { "Offset: $offset should be non-negative" }
+        require(count in 1..POKEMON_REQUEST_LIMIT) {
+            "Count: $count should be in [1, $POKEMON_REQUEST_LIMIT] range"
+        }
+
+        preformGetRequest<PokemonHeadersListDto>(
+            "$baseUrl/pokemon/?limit=$count&offset=$offset"
+        )
+    }
 
     suspend fun getPokemon(name: String) =
         preformGetRequest<PokemonDto>("$baseUrl/pokemon/$name/")
 
     private suspend inline fun <reified T> preformGetRequest(url: String) = scope.async {
+        require(Patterns.WEB_URL.matcher(url).matches()) { "Invalid url: $url" }
+
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (response.isSuccessful.not()) throw IOException("Request failed: $response")

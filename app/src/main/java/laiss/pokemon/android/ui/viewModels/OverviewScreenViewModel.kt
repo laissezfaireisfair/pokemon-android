@@ -6,15 +6,10 @@ import kotlinx.coroutines.flow.update
 import laiss.pokemon.android.data.IPokemonRepository
 import laiss.pokemon.android.ui.states.OverviewScreenState
 import laiss.pokemon.android.ui.states.toEntry
-import org.koin.core.component.KoinComponent
 
-class OverviewScreenViewModel(
-    private val pokemonRepository: IPokemonRepository
-) : RichViewModel(), KoinComponent {
-    companion object {
-        private const val MIN_ON_PAGE = 30
-    }
+private const val MIN_ON_PAGE = 30
 
+class OverviewScreenViewModel(private val pokemonRepository: IPokemonRepository) : RichViewModel() {
     private val _uiState = MutableStateFlow(OverviewScreenState())
     val uiState = _uiState.asStateFlow()
 

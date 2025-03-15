@@ -1,8 +1,11 @@
 package laiss.pokemon.android.ui.states
 
+import androidx.compose.runtime.Immutable
 import laiss.pokemon.android.data.models.Pokemon
 import laiss.pokemon.android.utils.capitalize
 
+
+@Immutable
 data class OverviewScreenEntry(
     val name: String,
     val imageUrl: String?,
@@ -19,6 +22,7 @@ fun Pokemon.toEntry() = OverviewScreenEntry(
     hp = hp
 )
 
+@Immutable
 data class OverviewScreenState(
     val isLoading: Boolean = false,
     val error: String? = null,

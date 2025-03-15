@@ -27,42 +27,48 @@ class PokemonRepository(
     private lateinit var strategy: IStrategy
     private var isInitialized = false
 
+    override suspend fun getPage(number: Int, pagingOffset: Int) = run {
+        require(0 <= number) { "Page number: $number should be non-negative" }
+        require(pagingOffset in 0..pageSize) {
+            "Paging offset should be in [0, pageSize=$pageSize] range"
+        }
+
+        ensureIsInitialized()
+        strategy.getPage(number, pagingOffset)
+    }
+
+    override suspend fun getRandomPageNumberAndOffset() = run {
+        ensureIsInitialized()
+        val pageNumber = Random.nextInt(0, strategy.pokemonCount / pageSize)
+        val pagingOffset = Random.nextInt(0, pageSize)
+        pageNumber to pagingOffset
+    }
+
+    override suspend fun getPokemonByName(pokemonName: String) = run {
+        ensureIsInitialized()
+        strategy.getPokemonByName(pokemonName)
+    }
+
     private suspend fun ensureIsInitialized() {
         if (isInitialized) return
 
-        val pokemonEntities = localStorageDataSource.getPokemonList()
-        try {
-            val pokemonCount = pokeApiDataSource.getPokemonHeadersList(0, 1).count
-            strategy = OnlineStrategy(pokemonCount, pokemonEntities, this)
-        } catch (_: Exception) {
-            strategy = OfflineStrategy(pokemonEntities, this)
+        strategy = localStorageDataSource.getPokemonList().let { localEntities ->
+            try {
+                val pokemonCount = pokeApiDataSource.getPokemonHeadersList(0, 1).count
+                OnlineStrategy(pokemonCount, localEntities, this)
+            } catch (_: Exception) {
+                OfflineStrategy(localEntities, this)
+            }
         }
 
         isInitialized = true
     }
-
-    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
-        ensureIsInitialized()
-        return strategy.getPage(number, pagingOffset)
-    }
-
-    override suspend fun getRandomPageNumberAndOffset(): Pair<Int, Int> {
-        ensureIsInitialized()
-        val pageNumber = Random.nextInt(0, strategy.pokemonCount / pageSize)
-        val pagingOffset = Random.nextInt(0, pageSize)
-        return pageNumber to pagingOffset
-    }
-
-    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
-        ensureIsInitialized()
-        return strategy.getPokemonByName(pokemonName)
-    }
 }
 
 private interface IStrategy {
-    suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon>
-    suspend fun getPokemonByName(pokemonName: String): Pokemon
     val pokemonCount: Int
+    suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon>
+    suspend fun getPokemonByName(name: String): Pokemon
 }
 
 private class OnlineStrategy(
@@ -78,38 +84,45 @@ private class OnlineStrategy(
         .associateBy { it.name }
         .toMutableMap()
 
-    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
+    override suspend fun getPage(number: Int, pagingOffset: Int) = run {
         val offset = repository.pageSize * number + pagingOffset
-        if (pokemonCount <= offset) return emptyList()
+        when {
+            pokemonCount <= offset -> emptyList()
+            else -> {
+                val indices = (offset..<(offset + repository.pageSize))
+                if (indices.all { pokemonListCache[it] != null }) return pokemonListCache
+                    .listIterator(offset)
+                    .asSequence()
+                    .take(repository.pageSize)
+                    .map { it!! }
+                    .toList()
 
-        val indices = (offset..<(offset + repository.pageSize))
-        if (indices.all { pokemonListCache[it] != null }) return pokemonListCache
-            .listIterator(offset)
-            .asSequence()
-            .take(repository.pageSize)
-            .map { it!! }
-            .toList()
+                val headerList =
+                    repository.pokeApiDataSource.getPokemonHeadersList(offset, repository.pageSize)
 
-        val headerList =
-            repository.pokeApiDataSource.getPokemonHeadersList(offset, repository.pageSize)
-
-        val pokemonList = coroutineScope {
-            headerList.results.map { async { getPokemonByName(it.name) } }.awaitAll()
+                val pokemonList = coroutineScope {
+                    headerList.results.map { async { getPokemonByName(it.name) } }.awaitAll()
+                }
+                synchronized(pokemonListCache) {
+                    pokemonList.forEachIndexed { i, pokemon ->
+                        pokemonListCache[offset + i] = pokemon
+                    }
+                }
+                pokemonList
+            }
         }
-        pokemonList.forEachIndexed { i, pokemon -> pokemonListCache[offset + i] = pokemon }
-        return pokemonList
     }
 
-    override suspend fun getPokemonByName(pokemonName: String): Pokemon {
-        val cachedPokemon = pokemonByNameCache[pokemonName]
-        if (cachedPokemon != null) return cachedPokemon
+    override suspend fun getPokemonByName(name: String) = pokemonByNameCache[name] ?: run {
+        val pokemon = repository.pokeApiDataSource.getPokemon(name).toModel()
 
-        val pokemon = repository.pokeApiDataSource.getPokemon(pokemonName).toModel()
-        pokemonByNameCache[pokemon.name] = pokemon
+        synchronized(pokemonByNameCache) { pokemonByNameCache[pokemon.name] = pokemon }
         repository.localStorageDataSource.storePokemon(pokemon.toEntity())
-        return pokemon
+
+        pokemon
     }
 }
+
 
 private class OfflineStrategy(
     pokemonEntities: List<PokemonEntity>,
@@ -120,13 +133,18 @@ private class OfflineStrategy(
     private val pokemonList = pokemonEntities.map { it.toModel() }
     private val pokemonByName = pokemonList.associateBy { it.name }
 
-    override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
+    override suspend fun getPage(number: Int, pagingOffset: Int) = run {
         val offset = repository.pageSize * number + pagingOffset
-        if (pokemonCount <= offset) return emptyList()
-        return pokemonList.listIterator(offset).asSequence()
-            .take(offset + repository.pageSize).toList()
+        when {
+            pokemonCount <= offset -> emptyList()
+            else -> pokemonList
+                .listIterator(offset)
+                .asSequence()
+                .take(offset + repository.pageSize)
+                .toList()
+        }
     }
 
-    override suspend fun getPokemonByName(pokemonName: String) = pokemonByName[pokemonName]
-        ?: throw IllegalArgumentException("No pokemon with such name")
+    override suspend fun getPokemonByName(name: String) = pokemonByName[name]
+        ?: throw NoSuchElementException("No pokemon with such name")
 }

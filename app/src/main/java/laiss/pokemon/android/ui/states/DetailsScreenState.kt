@@ -1,8 +1,10 @@
 package laiss.pokemon.android.ui.states
 
+import androidx.compose.runtime.Immutable
 import laiss.pokemon.android.data.models.Pokemon
 import laiss.pokemon.android.utils.capitalize
 
+@Immutable
 data class Details(
     val name: String,
     val imageUrl: String?,
@@ -25,6 +27,7 @@ fun Pokemon.toDetails() = Details(
     hp = hp.toString()
 )
 
+@Immutable
 data class DetailsScreenState(
     val isLoading: Boolean = false, val error: String? = null, val details: Details? = null
 ) {
