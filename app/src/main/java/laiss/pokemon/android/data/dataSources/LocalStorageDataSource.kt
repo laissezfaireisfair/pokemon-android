@@ -25,8 +25,9 @@ data class PokemonEntity(
 )
 
 class LocalStorageDataSource(applicationContext: Context) {
-    private val localDatabase =
-        Room.databaseBuilder(applicationContext, LocalDatabase::class.java, "local-db").build()
+    private val localDatabase = Room
+        .databaseBuilder(applicationContext, LocalDatabase::class.java, "local-db")
+        .build()
 
     suspend fun getPokemonList() = localDatabase.pokemonDao().loadAllPokemon()
 

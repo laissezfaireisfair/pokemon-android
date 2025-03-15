@@ -73,18 +73,22 @@ private class OnlineStrategy(
     /**
      * Copies remote structure, nulls for non-loaded items*/
     private val pokemonListCache = MutableList<Pokemon?>(pokemonCount) { null }
-    private val pokemonByNameCache =
-        pokemonEntities.map { it.toModel() }.associateBy { it.name }.toMutableMap()
+    private val pokemonByNameCache = pokemonEntities
+        .map { it.toModel() }
+        .associateBy { it.name }
+        .toMutableMap()
 
     override suspend fun getPage(number: Int, pagingOffset: Int): List<Pokemon> {
         val offset = repository.pageSize * number + pagingOffset
         if (pokemonCount <= offset) return emptyList()
 
         val indices = (offset..<(offset + repository.pageSize))
-        if (indices.all { pokemonListCache[it] != null })
-            return pokemonListCache.listIterator(offset).asSequence()
-                .take(repository.pageSize)
-                .map { it!! }.toList()
+        if (indices.all { pokemonListCache[it] != null }) return pokemonListCache
+            .listIterator(offset)
+            .asSequence()
+            .take(repository.pageSize)
+            .map { it!! }
+            .toList()
 
         val headerList =
             repository.pokeApiDataSource.getPokemonHeadersList(offset, repository.pageSize)

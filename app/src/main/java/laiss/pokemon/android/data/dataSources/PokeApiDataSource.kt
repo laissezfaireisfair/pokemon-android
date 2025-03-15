@@ -18,7 +18,8 @@ class PokeApiDataSource(private val client: OkHttpClient) {
     suspend fun getPokemonHeadersList(offset: Int, count: Int) =
         preformGetRequest<PokemonHeadersListDto>("$baseUrl/pokemon/?limit=$count&offset=$offset")
 
-    suspend fun getPokemon(name: String) = preformGetRequest<PokemonDto>("$baseUrl/pokemon/$name/")
+    suspend fun getPokemon(name: String) =
+        preformGetRequest<PokemonDto>("$baseUrl/pokemon/$name/")
 
     private suspend inline fun <reified T> preformGetRequest(url: String) = scope.async {
         val request = Request.Builder().url(url).build()

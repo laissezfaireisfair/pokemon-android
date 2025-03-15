@@ -10,8 +10,7 @@ abstract class RichViewModel : ViewModel() {
             task.invoke()
         } catch (exception: Exception) {
             passErrorMessageToState(exception.toString())
-        }
-        catch (notImplementedError: NotImplementedError) {
+        } catch (notImplementedError: NotImplementedError) {
             passErrorMessageToState(notImplementedError.toString())
         }
     }
