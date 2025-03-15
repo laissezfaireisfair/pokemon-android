@@ -7,14 +7,13 @@ import laiss.pokemon.android.data.IPokemonRepository
 import laiss.pokemon.android.ui.states.OverviewScreenState
 import laiss.pokemon.android.ui.states.toEntry
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class OverviewScreenViewModel : RichViewModel(), KoinComponent {
+class OverviewScreenViewModel(
+    private val pokemonRepository: IPokemonRepository
+) : RichViewModel(), KoinComponent {
     companion object {
         private const val MIN_ON_PAGE = 30
     }
-
-    private val pokemonRepository: IPokemonRepository by inject()
 
     private val _uiState = MutableStateFlow(OverviewScreenState())
     val uiState = _uiState.asStateFlow()

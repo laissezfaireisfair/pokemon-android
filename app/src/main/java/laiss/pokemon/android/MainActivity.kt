@@ -14,6 +14,7 @@ import laiss.pokemon.android.ui.OverviewScreen
 import laiss.pokemon.android.ui.theme.PokemonAndroidTheme
 import laiss.pokemon.android.ui.viewModels.DetailsScreenViewModel
 import laiss.pokemon.android.ui.viewModels.OverviewScreenViewModel
+import org.koin.android.ext.android.get
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,14 +30,14 @@ class MainActivity : ComponentActivity() {
                 ) {
                     composable(Screens.Overview.route) {
                         OverviewScreen(navHostController = navHostController,
-                            viewModel = viewModel { OverviewScreenViewModel() })
+                            viewModel = viewModel { OverviewScreenViewModel(get()) })
                     }
                     composable("${Screens.Details.route}/{pokemonName}") { navBackStackEntry ->
                         val pokemonName = navBackStackEntry.arguments?.getString("pokemonName")
                             ?: throw IllegalArgumentException("Pokemon name expected when navigating to details")
 
                         DetailsScreen(navHostController = navHostController, viewModel = viewModel {
-                            DetailsScreenViewModel(pokemonName)
+                            DetailsScreenViewModel(pokemonName, get())
                         })
                     }
                 }

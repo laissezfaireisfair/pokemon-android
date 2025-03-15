@@ -7,11 +7,11 @@ import laiss.pokemon.android.data.IPokemonRepository
 import laiss.pokemon.android.ui.states.DetailsScreenState
 import laiss.pokemon.android.ui.states.toDetails
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class DetailsScreenViewModel(pokemonName: String) : RichViewModel(), KoinComponent {
-    private val pokemonRepository: IPokemonRepository by inject()
-
+class DetailsScreenViewModel(
+    pokemonName: String,
+    pokemonRepository: IPokemonRepository
+) : RichViewModel(), KoinComponent {
     private val _uiState = MutableStateFlow(DetailsScreenState())
     val uiState = _uiState.asStateFlow()
 
